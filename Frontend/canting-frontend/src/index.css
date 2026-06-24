@@ -1,0 +1,23 @@
+/* ✅ PINDAHKAN IMPORT FONT KE PALING ATAS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset dasar & custom scrollbar */
+body {
+  @apply bg-cream-50 text-brown-900 antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-cream-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brown-300 rounded-full hover:bg-brown-400;
+}
