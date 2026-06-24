@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Attribute {
+  Benefit
+  Cost
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdScores ProductScore[]
+
+  @@map("users")
+}
+
+model Region {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sanggars                Sanggar[]
+  recommendationHistories RecommendationHistory[]
+
+  @@map("regions")
+}
+
+model Sanggar {
+  id          Int      @id @default(autoincrement())
+  regionId    Int
+  name        String   @db.VarChar(150)
+  ownerName   String   @db.VarChar(100)
+  address     String   @db.Text
+  latitude    Decimal  @db.Decimal(10, 8)
+  longitude   Decimal  @db.Decimal(11, 8)
+  phone       String?  @db.VarChar(20)
+  description String?  @db.Text
+  image       String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  region   Region    @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  products Product[]
+
+  @@index([regionId])
+  @@map("sanggars")
+}
+
+model BatikCategory {
+  id           Int @id @default(autoincrement())
+
+  categoryName String @unique @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products                Product[]
+  recommendationHistories RecommendationHistory[]
+
+  @@map("batik_categories")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  sanggarId   Int
+  categoryId  Int
+  productName String   @db.VarChar(150)
+  motifType   String?  @db.VarChar(100)
+  price       Decimal  @db.Decimal(12, 0)
+  stock       Int      @default(0)
+  description String?  @db.Text
+  image       String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sanggar Sanggar       @relation(fields: [sanggarId], references: [id], onDelete: Cascade)
+  category BatikCategory @relation(fields: [categoryId], references: [id])
+  reviews  Review[]
+  score    ProductScore?
+  recommendationResults RecommendationResult[]
+
+  @@index([sanggarId])
+  @@index([categoryId])
+  @@index([price])
+
+  @@map("products")
+}
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  reviewerName String   @db.VarChar(100)
+  quality      Int
+  design       Int
+  comment      String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+
+  @@map("reviews")
+}
+
+model Criteria {
+  id           Int       @id @default(autoincrement())
+  criteriaName String    @unique @db.VarChar(100)
+  attribute    Attribute
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("criterias")
+}
+
+model ProductScore {
+  id             Int      @id @default(autoincrement())
+  productId      Int      @unique
+  qualityAvg     Decimal  @db.Decimal(5, 2)
+  popularityAvg  Decimal  @db.Decimal(5, 2)
+  designAvg      Decimal  @db.Decimal(5, 2)
+  adminId        Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  admin   User    @relation(fields: [adminId], references: [id])
+
+  @@map("product_scores")
+}
+
+model WeightHistory {
+  id                 Int      @id @default(autoincrement())
+  ratingWeight       Decimal  @db.Decimal(5, 4)
+  distanceWeight     Decimal  @db.Decimal(5, 4)
+  priceWeight        Decimal  @db.Decimal(5, 4)
+  popularityWeight   Decimal  @db.Decimal(5, 4)
+  designWeight       Decimal  @db.Decimal(5, 4)
+  createdAt          DateTime @default(now())
+
+  recommendations RecommendationHistory[]
+
+  @@map("weight_histories")
+}
+
+model RecommendationHistory {
+  id              Int      @id @default(autoincrement())
+  weightHistoryId Int
+  regionId        Int?
+  categoryId      Int?
+  latitude        Decimal  @db.Decimal(10, 8)
+  longitude       Decimal  @db.Decimal(11, 8)
+  minPrice        Decimal? @db.Decimal(12, 0)
+  maxPrice        Decimal? @db.Decimal(12, 0)
+  createdAt       DateTime @default(now())
+
+  weightHistory WeightHistory @relation(fields: [weightHistoryId], references: [id])
+  region        Region?       @relation(fields: [regionId], references: [id])
+  category      BatikCategory? @relation(fields: [categoryId], references: [id])
+
+  results RecommendationResult[]
+
+  @@index([regionId])
+  @@index([categoryId])
+  @@index([createdAt])
+
+  @@map("recommendation_histories")
+}
+
+model RecommendationResult {
+  id               Int      @id @default(autoincrement())
+  recommendationId Int
+  productId        Int
+  preferenceValue  Decimal  @db.Decimal(8, 5)
+  ranking          Int
+
+  recommendation RecommendationHistory @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  product        Product               @relation(fields: [productId], references: [id])
+
+  @@unique([recommendationId, productId])
+
+  @@index([productId])
+
+  @@map("recommendation_results")
+}
