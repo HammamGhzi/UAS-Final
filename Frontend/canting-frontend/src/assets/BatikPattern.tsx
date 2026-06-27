@@ -21,8 +21,8 @@ export const BatikPattern = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "50%",
-            opacity: 0.08,
+            width: "min(900px, 90%)",
+            opacity: 0.10,
             pointerEvents: "none",
           }}
         />
@@ -41,10 +41,11 @@ export const BatikPattern = ({
         alt=""
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          width: "35%",
-          opacity: 0.8,
+          top: "-1.5rem",
+          left: "1rem",
+          width: "44%",
+          maxWidth: "520px",
+          opacity: 0.42,
           pointerEvents: "none",
         }}
       />
@@ -54,10 +55,24 @@ export const BatikPattern = ({
         alt=""
         style={{
           position: "absolute",
-          top: "40%",
-          right: 0,
-          width: "35%",
-          opacity: 0.1,
+          top: "39%",
+          right: "-1.5rem",
+          width: "34%",
+          maxWidth: "430px",
+          opacity: 0.24,
+          pointerEvents: "none",
+        }}
+      />
+      <img
+        src="/batik-pattern-4.png"
+        alt=""
+        style={{
+          position: "absolute",
+          top: "30%",
+          left: "-2rem",
+          width: "28%",
+          maxWidth: "360px",
+          opacity: 0.16,
           pointerEvents: "none",
         }}
       />

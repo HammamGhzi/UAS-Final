@@ -5,6 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Reset dasar & custom scrollbar */
 body {
   @apply bg-cream-50 text-brown-900 antialiased;
@@ -20,4 +24,15 @@ body {
 
 ::-webkit-scrollbar-thumb {
   @apply bg-brown-300 rounded-full hover:bg-brown-400;
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
