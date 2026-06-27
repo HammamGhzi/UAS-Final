@@ -15,17 +15,20 @@ enum Attribute {
 enum Role {
   SUPER_ADMIN
   ADMIN
+  USER
 }
 
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique @db.VarChar(50)
+  email  String   @unique @db.VarChar(50)
   password  String
   role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  createdScores ProductScore[]
+  sanggars  Sanggar[] // Sanggar yang dikelola Admin
+  reviews   Review[]  // Review yang ditulis oleh User
+  // createdScores ProductScore[]
 
   @@map("users")
 }
@@ -45,6 +48,7 @@ model Region {
 model Sanggar {
   id          Int      @id @default(autoincrement())
   regionId    Int
+  adminId     Int?
   name        String   @db.VarChar(150)
   ownerName   String   @db.VarChar(100)
   address     String   @db.Text
@@ -57,6 +61,7 @@ model Sanggar {
   updatedAt   DateTime @updatedAt
 
   region   Region    @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  admin       User?     @relation(fields: [adminId], references: [id]) // Relasi ke User (Admin)
   products Product[]
 
   @@index([regionId])
@@ -82,7 +87,6 @@ model Product {
   sanggarId   Int
   categoryId  Int
   productName String   @db.VarChar(150)
-  motifType   String?  @db.VarChar(100)
   price       Decimal  @db.Decimal(12, 0)
   stock       Int      @default(0)
   description String?  @db.Text
@@ -93,7 +97,7 @@ model Product {
   sanggar Sanggar       @relation(fields: [sanggarId], references: [id], onDelete: Cascade)
   category BatikCategory @relation(fields: [categoryId], references: [id])
   reviews  Review[]
-  score    ProductScore?
+  // score    ProductScore?
   recommendationResults RecommendationResult[]
 
   @@index([sanggarId])
@@ -106,13 +110,16 @@ model Product {
 model Review {
   id           Int      @id @default(autoincrement())
   productId    Int
+  userId       Int?
   reviewerName String   @db.VarChar(100)
   quality      Int
+  popularity   Int
   design       Int
   comment      String?  @db.Text
   createdAt    DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade) // Relasi ke User
 
   @@index([productId])
 
@@ -130,27 +137,27 @@ model Criteria {
   @@map("criterias")
 }
 
-model ProductScore {
-  id             Int      @id @default(autoincrement())
-  productId      Int      @unique
-  qualityAvg     Decimal  @db.Decimal(5, 2)
-  popularityAvg  Decimal  @db.Decimal(5, 2)
-  designAvg      Decimal  @db.Decimal(5, 2)
-  adminId        Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  admin   User    @relation(fields: [adminId], references: [id])
-
-  @@map("product_scores")
-}
+//model ProductScore {
+//  id             Int      @id @default(autoincrement())
+//  productId      Int      @unique
+//  qualityAvg     Decimal  @db.Decimal(5, 2)
+//  popularityAvg  Decimal  @db.Decimal(5, 2)
+//  designAvg      Decimal  @db.Decimal(5, 2)
+//  adminId        Int
+//  createdAt      DateTime @default(now())
+//  updatedAt      DateTime @updatedAt
+//
+//  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+//  admin   User    @relation(fields: [adminId], references: [id])
+//
+//  @@map("product_scores")
+//}
 
 model WeightHistory {
   id                 Int      @id @default(autoincrement())
-  ratingWeight       Decimal  @db.Decimal(5, 4)
-  distanceWeight     Decimal  @db.Decimal(5, 4)
   priceWeight        Decimal  @db.Decimal(5, 4)
+  distanceWeight     Decimal  @db.Decimal(5, 4)
+  qualityWeight       Decimal  @db.Decimal(5, 4)
   popularityWeight   Decimal  @db.Decimal(5, 4)
   designWeight       Decimal  @db.Decimal(5, 4)
   createdAt          DateTime @default(now())
@@ -182,6 +189,26 @@ model RecommendationHistory {
   @@index([createdAt])
 
   @@map("recommendation_histories")
+}
+
+// Tabel Sesi Pencarian SPK (Sangat Penting)
+model SpkSession {
+  sessionId   String   @id @db.VarChar(100)
+  userId      Int
+  regionId    Int?
+  categoryId  Int?
+  minPrice    Decimal  @default(0) @db.Decimal(12, 0)
+  maxPrice    Decimal  @default(999999999) @db.Decimal(12, 0)
+  userLat     Decimal  @db.Decimal(10, 8)
+  userLon     Decimal  @db.Decimal(11, 8)
+  wPrice      Decimal  @db.Decimal(5, 4)
+  wDistance   Decimal  @db.Decimal(5, 4)
+  wQuality    Decimal  @db.Decimal(5, 4)
+  wPopularity Decimal  @db.Decimal(5, 4)
+  wDesign     Decimal  @db.Decimal(5, 4)
+  createdAt   DateTime @default(now())
+
+  @@map("spk_sessions")
 }
 
 model RecommendationResult {
