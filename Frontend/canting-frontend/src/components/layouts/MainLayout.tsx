@@ -1,79 +1,144 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MainLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('beranda');
   const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === '/';
+
+  useEffect(() => {
+    if (!isHome) return;
+
+    const updateActiveSection = () => {
+      const scrollY = window.scrollY;
+      const sanggarTop = document.getElementById('sanggar-section')?.offsetTop ?? Infinity;
+      const katalogTop = document.getElementById('katalog-section')?.offsetTop ?? Infinity;
+      const tentangTop = document.getElementById('tentang-section')?.offsetTop ?? Infinity;
+      const triggerPoint = scrollY + window.innerHeight * 0.38;
+
+      if (triggerPoint >= tentangTop) {
+        setActiveSection('tentang');
+      } else if (triggerPoint >= katalogTop) {
+        setActiveSection('katalog');
+      } else if (triggerPoint >= sanggarTop) {
+        setActiveSection('sanggar');
+      } else {
+        setActiveSection('beranda');
+      }
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+    };
+  }, [isHome]);
+
+  const scrollToTop = () => {
+    setIsMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const scrollTo = (id: string) => {
     setIsMenuOpen(false);
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     } else {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-cream-100/95 backdrop-blur-sm border-b border-cream-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <nav
+        className={`z-50 backdrop-blur-md ${
+          location.pathname === '/'
+            ? 'fixed top-0 left-0 w-full bg-transparent'
+            : 'sticky top-0 bg-cream-100/95 border-b border-cream-200'
+        }`}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="text-2xl font-serif font-bold text-brown-900">
+            <Link to="/" className="text-2xl font-serif font-bold text-black z-10">
               CANTING
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <Link
-                to="/"
-                className={`text-sm font-medium transition-colors ${
-                  location.pathname === '/' ? 'text-lime-600' : 'text-brown-800 hover:text-lime-600'
-                }`}
-              >
-                Beranda
-              </Link>
-              <button
-                onClick={() => scrollTo('katalog-section')}
-                className="text-sm font-medium transition-colors text-brown-800 hover:text-lime-600"
-              >
-                Katalog
-              </button>
-              <button
-                onClick={() => scrollTo('sanggar-section')}
-                className="text-sm font-medium transition-colors text-brown-800 hover:text-lime-600"
-              >
-                Daftar Sanggar
-              </button>
-              <Link
-                to="/tentang"
-                className={`text-sm font-medium transition-colors ${
-                  location.pathname === '/tentang' ? 'text-lime-600' : 'text-brown-800 hover:text-lime-600'
-                }`}
-              >
-                Tentang
-              </Link>
-              <Link
-                to="/admin/login"
-                className="flex items-center gap-2 px-4 py-2 bg-brown-900 text-cream-50 rounded-full text-sm font-medium hover:bg-brown-800 transition-colors"
-              >
-                <User size={16} />
-                Masuk
-              </Link>
+            <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+              <div className="flex items-center gap-1 bg-white/[0.14] backdrop-blur-xl border border-black/10 rounded-full px-1.5 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                <Link
+                  to="/"
+                  onClick={(e) => {
+                    if (isHome) {
+                      e.preventDefault();
+                      scrollToTop();
+                    }
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isHome && activeSection === 'beranda'
+                      ? 'bg-white/80 text-black shadow-sm'
+                      : 'text-black/75 hover:text-black'
+                  }`}
+                >
+                  Beranda
+                </Link>
+                <button
+                  onClick={() => scrollTo('katalog-section')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isHome && activeSection === 'katalog'
+                      ? 'bg-white/80 text-black shadow-sm'
+                      : 'text-black/75 hover:text-black'
+                  }`}
+                >
+                  Katalog
+                </button>
+                <button
+                  onClick={() => scrollTo('sanggar-section')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isHome && activeSection === 'sanggar'
+                      ? 'bg-white/80 text-black shadow-sm'
+                      : 'text-black/75 hover:text-black'
+                  }`}
+                >
+                  Daftar Sanggar
+                </button>
+                <button
+                  onClick={() => scrollTo('tentang-section')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isHome && activeSection === 'tentang'
+                      ? 'bg-white/80 text-black shadow-sm'
+                      : 'text-black/75 hover:text-black'
+                  }`}
+                >
+                  Tentang
+                </button>
+              </div>
             </div>
+
+            {/* Masuk */}
+            <Link
+              to="/admin/login"
+              className="hidden md:flex items-center px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-[#432f27] transition-colors z-10"
+            >
+              Masuk
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-brown-800"
+              className="md:hidden p-2 text-brown-800 z-10"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -92,38 +157,52 @@ const MainLayout = () => {
               <div className="px-4 py-2 space-y-1">
                 <Link
                   to="/"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    if (isHome) {
+                      e.preventDefault();
+                      scrollToTop();
+                    } else {
+                      setIsMenuOpen(false);
+                    }
+                  }}
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    location.pathname === '/'
-                      ? 'text-lime-600 bg-lime-50'
-                      : 'text-brown-800 hover:text-lime-600 hover:bg-cream-50'
+                    isHome && activeSection === 'beranda'
+                      ? 'text-brown-900 bg-cream-200/60'
+                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
                   }`}
                 >
                   Beranda
                 </Link>
                 <button
                   onClick={() => scrollTo('katalog-section')}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brown-800 hover:text-lime-600 hover:bg-cream-50"
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    isHome && activeSection === 'katalog'
+                      ? 'text-brown-900 bg-cream-200/60'
+                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
+                  }`}
                 >
                   Katalog
                 </button>
                 <button
                   onClick={() => scrollTo('sanggar-section')}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brown-800 hover:text-lime-600 hover:bg-cream-50"
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    isHome && activeSection === 'sanggar'
+                      ? 'text-brown-900 bg-cream-200/60'
+                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
+                  }`}
                 >
                   Daftar Sanggar
                 </button>
-                <Link
-                  to="/tentang"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    location.pathname === '/tentang'
-                      ? 'text-lime-600 bg-lime-50'
-                      : 'text-brown-800 hover:text-lime-600 hover:bg-cream-50'
+                <button
+                  onClick={() => scrollTo('tentang-section')}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    isHome && activeSection === 'tentang'
+                      ? 'text-brown-900 bg-cream-200/60'
+                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
                   }`}
                 >
                   Tentang
-                </Link>
+                </button>
                 <Link
                   to="/admin/login"
                   onClick={() => setIsMenuOpen(false)}
@@ -164,14 +243,20 @@ const MainLayout = () => {
                   </button>
                 </li>
                 <li>
-                  <Link to="/rekomendasi" className="hover:text-brown-900">Rekomendasi</Link>
+                  <button onClick={() => scrollTo('rekomendasi-section')} className="hover:text-brown-900">
+                    Rekomendasi
+                  </button>
                 </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-brown-900">Company</h4>
               <ul className="space-y-2 text-sm text-brown-600">
-                <li><Link to="/tentang" className="hover:text-brown-900">Tentang</Link></li>
+                <li>
+                  <button onClick={() => scrollTo('tentang-section')} className="hover:text-brown-900">
+                    Tentang
+                  </button>
+                </li>
                 <li><a href="#" className="hover:text-brown-900">Kontak</a></li>
               </ul>
             </div>

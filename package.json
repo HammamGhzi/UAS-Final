@@ -5,6 +5,7 @@
     "framer-motion": "^12.40.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.21.0",
+    "npx": "^10.2.2",
     "react-hook-form": "^7.80.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.0",
