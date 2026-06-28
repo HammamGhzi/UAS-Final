@@ -1,13 +1,16 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { LogOut, Menu, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const MainLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
   const location = useLocation();
   const navigate = useNavigate();
+  const { isUser, userName, logoutUser } = useAuthStore();
   const isHome = location.pathname === '/';
   const isProductDetail = location.pathname.startsWith('/produk/');
 
@@ -49,6 +52,7 @@ const MainLayout = () => {
 
   const scrollTo = (id: string) => {
     setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -57,6 +61,13 @@ const MainLayout = () => {
     } else {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  const handleUserLogout = () => {
+    logoutUser();
+    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+    navigate('/');
   };
 
   return (
@@ -130,13 +141,49 @@ const MainLayout = () => {
               </div>
             </div>
 
-            {/* Masuk */}
-            <Link
-              to="/admin/login"
-              className="hidden md:flex items-center px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-[#432f27] transition-colors z-10"
-            >
-              Masuk
-            </Link>
+            <div className="relative z-10 hidden md:block">
+              {isUser ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsUserMenuOpen((current) => !current)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-[#432f27]"
+                    aria-label="Menu akun"
+                  >
+                    <User size={18} />
+                  </button>
+                  <AnimatePresence>
+                    {isUserMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        className="absolute right-0 top-12 w-44 overflow-hidden rounded-xl border border-cream-200 bg-white shadow-lg"
+                      >
+                        <div className="border-b border-cream-200 px-4 py-3 text-sm font-medium text-brown-900">
+                          {userName || 'User'}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleUserLogout}
+                          className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                        >
+                          <LogOut size={16} />
+                          Sign out
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                <Link
+                  to="/admin/login"
+                  className="flex items-center px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-[#432f27] transition-colors"
+                >
+                  Masuk
+                </Link>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -206,13 +253,24 @@ const MainLayout = () => {
                 >
                   Tentang
                 </button>
-                <Link
-                  to="/admin/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block px-3 py-2 text-brown-800 font-medium"
-                >
-                  Masuk
-                </Link>
+                {isUser ? (
+                  <button
+                    type="button"
+                    onClick={handleUserLogout}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 font-medium"
+                  >
+                    <LogOut size={18} />
+                    Sign out
+                  </button>
+                ) : (
+                  <Link
+                    to="/admin/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block px-3 py-2 text-brown-800 font-medium"
+                  >
+                    Masuk
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}
