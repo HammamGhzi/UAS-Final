@@ -98,16 +98,6 @@ const MainLayout = () => {
                   Beranda
                 </Link>
                 <button
-                  onClick={() => scrollTo('katalog-section')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    isHome && activeSection === 'katalog'
-                      ? 'bg-white/80 text-black shadow-sm'
-                      : 'text-black/75 hover:text-black'
-                  }`}
-                >
-                  Katalog
-                </button>
-                <button
                   onClick={() => scrollTo('sanggar-section')}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                     isHome && activeSection === 'sanggar'
@@ -116,6 +106,16 @@ const MainLayout = () => {
                   }`}
                 >
                   Daftar Sanggar
+                </button>
+                <button
+                  onClick={() => scrollTo('katalog-section')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isHome && activeSection === 'katalog'
+                      ? 'bg-white/80 text-black shadow-sm'
+                      : 'text-black/75 hover:text-black'
+                  }`}
+                >
+                  Katalog
                 </button>
                 <button
                   onClick={() => scrollTo('tentang-section')}
@@ -177,16 +177,6 @@ const MainLayout = () => {
                   Beranda
                 </Link>
                 <button
-                  onClick={() => scrollTo('katalog-section')}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    isHome && activeSection === 'katalog'
-                      ? 'text-brown-900 bg-cream-200/60'
-                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
-                  }`}
-                >
-                  Katalog
-                </button>
-                <button
                   onClick={() => scrollTo('sanggar-section')}
                   className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
                     isHome && activeSection === 'sanggar'
@@ -195,6 +185,16 @@ const MainLayout = () => {
                   }`}
                 >
                   Daftar Sanggar
+                </button>
+                <button
+                  onClick={() => scrollTo('katalog-section')}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    isHome && activeSection === 'katalog'
+                      ? 'text-brown-900 bg-cream-200/60'
+                      : 'text-brown-800 hover:text-brown-900 hover:bg-cream-50'
+                  }`}
+                >
+                  Katalog
                 </button>
                 <button
                   onClick={() => scrollTo('tentang-section')}
