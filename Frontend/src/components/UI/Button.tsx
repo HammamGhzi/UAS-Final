@@ -1,39 +1,51 @@
-import { ButtonHTMLAttributes, ReactNode, FC } from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { cn } from '../../lib/utils';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  children: ReactNode;
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-lime-600 text-white hover:bg-lime-700',
+        secondary: 'bg-brown-900 text-cream-50 hover:bg-brown-800',
+        outline: 'border-2 border-lime-600 text-lime-600 hover:bg-lime-50',
+        danger: 'bg-red-600 text-white hover:bg-red-700',
+        ghost: 'hover:bg-cream-100 hover:text-brown-900',
+      },
+      size: {
+        sm: 'px-3 py-1.5 text-sm',
+        md: 'px-4 py-2 text-base',
+        lg: 'px-6 py-3 text-lg',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  },
+);
+
+interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
 }
 
-export const Button: FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
-  children,
-  className = '',
-  ...props
-}) => {
-  const baseStyles = 'rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2';
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button';
 
-  const variants = {
-    primary: 'bg-lime-600 text-white hover:bg-lime-700',
-    secondary: 'bg-brown-900 text-cream-50 hover:bg-brown-800',
-    outline: 'border-2 border-lime-600 text-lime-600 hover:bg-lime-50',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
-  };
+    return (
+      <Comp
+        ref={ref}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
+    );
+  },
+);
 
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
-
-  return (
-    <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+Button.displayName = 'Button';

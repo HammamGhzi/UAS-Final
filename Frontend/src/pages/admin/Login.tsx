@@ -1,42 +1,70 @@
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "../../components/UI/Button";
 import { Input } from "../../components/UI/Input";
 import { adminApi } from "../../services/api";
+import { useAuthStore } from "../../stores/useAuthStore";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+
+const loginSchema = z.object({
+  username: z
+    .string()
+    .min(1, "Email wajib diisi.")
+    .email("Format email belum valid."),
+  password: z.string().min(1, "Password wajib diisi."),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const login = useAuthStore((state) => state.login);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const onSubmit = async (data: LoginForm) => {
     setError("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.username || !form.password) {
-      setError("Username dan password wajib diisi.");
-      return;
-    }
 
     setLoading(true);
     try {
-      const res = await adminApi.login(form);
+      const res = await adminApi.login(data);
       const token = res.data?.token;
       if (token) {
         localStorage.setItem("adminToken", token);
+        login(token);
         navigate("/admin/dashboard");
       } else {
         setError("Login gagal. Token tidak ditemukan.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err?.response?.data?.message || "Username atau password salah.";
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        typeof err.response === "object" &&
+        err.response &&
+        "data" in err.response &&
+        typeof err.response.data === "object" &&
+        err.response.data &&
+        "message" in err.response.data &&
+        typeof err.response.data.message === "string"
+          ? err.response.data.message
+          : "Username atau password salah.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -85,18 +113,19 @@ const AdminLogin = () => {
                 Login
               </h1>
 
-              <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
+              <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-3.5">
                 <div>
                   <label className="mb-2 block text-xs font-medium text-[#4b423b]">
                     Email
                   </label>
                   <Input
-                    name="username"
                     type="text"
                     placeholder="username@gmail.com"
-                    value={form.username}
-                    onChange={handleChange}
+                    {...register("username", {
+                      onChange: () => setError(""),
+                    })}
                     disabled={loading}
+                    error={errors.username?.message}
                     className="h-[30px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                   />
                 </div>
@@ -107,12 +136,13 @@ const AdminLogin = () => {
                   </label>
                   <div className="relative">
                     <Input
-                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Password"
-                      value={form.password}
-                      onChange={handleChange}
+                      {...register("password", {
+                        onChange: () => setError(""),
+                      })}
                       disabled={loading}
+                      error={errors.password?.message}
                       className="h-[30px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                     />
                     <button
