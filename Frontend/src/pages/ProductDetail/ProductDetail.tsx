@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { Heart, MapPin, Share2, ShieldCheck, Star } from 'lucide-react';
 
@@ -76,7 +76,9 @@ const RatingStars = ({
 
 const ProductDetail = () => {
   useParams();
+  const navigate = useNavigate();
   const product = DUMMY_PRODUCT;
+  const isLoggedIn = Boolean(localStorage.getItem('adminToken'));
 
   const [reviews, setReviews] = useState(DUMMY_REVIEWS);
   const [selectedSize, setSelectedSize] = useState('L');
@@ -93,6 +95,11 @@ const ProductDetail = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!isLoggedIn) {
+      navigate('/admin/login');
+      return;
+    }
 
     setReviews([
       {
@@ -266,6 +273,11 @@ const ProductDetail = () => {
           <form onSubmit={handleSubmit} className="rounded-xl border border-[#d8cdb8] bg-[#fff8e9] p-4 md:p-5">
             <h2 className="text-lg font-semibold">Nilai Produk Kami!</h2>
             <p className="mt-3 text-xs text-[#626262]">Bagaimana kualitas produk kami?</p>
+            {!isLoggedIn && (
+              <div className="mt-4 rounded-lg border border-[#ead9b5] bg-[#fff1cf] px-4 py-3 text-xs font-medium text-[#7a5a24]">
+                Login dulu untuk memberi rating dan feedback produk.
+              </div>
+            )}
 
             <div className="mt-5 space-y-5">
               {([
@@ -275,7 +287,10 @@ const ProductDetail = () => {
               ] as const).map(([label, key]) => (
                 <div key={key}>
                   <p className="mb-2 text-xs font-semibold text-[#5c574e]">{label}</p>
-                  <RatingStars value={form[key]} onChange={(value) => setForm({ ...form, [key]: value })} />
+                  <RatingStars
+                    value={form[key]}
+                    onChange={isLoggedIn ? (value) => setForm({ ...form, [key]: value }) : undefined}
+                  />
                 </div>
               ))}
             </div>
@@ -289,10 +304,11 @@ const ProductDetail = () => {
               onChange={(event) => setForm({ ...form, komentar: event.target.value })}
               placeholder="Tambahkan feedback"
               rows={5}
-              className="mt-2 w-full resize-none rounded-md border border-[#e3dac6] bg-[#fff6e3] px-3 py-3 text-sm outline-none transition focus:border-[#9d8765]"
+              disabled={!isLoggedIn}
+              className="mt-2 w-full resize-none rounded-md border border-[#e3dac6] bg-[#fff6e3] px-3 py-3 text-sm outline-none transition focus:border-[#9d8765] disabled:cursor-not-allowed disabled:opacity-70"
             />
             <button type="submit" className="mt-3 h-11 w-full rounded-md bg-[#a7e600] text-sm font-semibold text-white">
-              Submit
+              {isLoggedIn ? 'Submit' : 'Login untuk Submit'}
             </button>
           </form>
         </div>

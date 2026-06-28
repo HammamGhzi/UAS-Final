@@ -9,6 +9,7 @@ const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
+  const isProductDetail = location.pathname.startsWith('/produk/');
 
   useEffect(() => {
     if (!isHome) return;
@@ -65,7 +66,9 @@ const MainLayout = () => {
         className={`z-50 backdrop-blur-md ${
           location.pathname === '/'
             ? 'fixed top-0 left-0 w-full bg-transparent'
-            : 'sticky top-0 bg-cream-100/95 border-b border-cream-200'
+            : isProductDetail
+              ? 'sticky top-0 bg-[#fff6e3]/95 border-b border-[#eadfc9]'
+              : 'sticky top-0 bg-cream-100/95 border-b border-cream-200'
         }`}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
