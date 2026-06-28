@@ -257,15 +257,11 @@ const Home = () => {
               <div className="relative z-20 p-8 md:p-12">
                 <div className="bg-[#f0a854] rounded-2xl p-8 max-w-sm text-center border border-orange-400/40">
                   <h3 className="text-xl font-bold text-brown-900 mb-3">
-                    Promo Spesial Anniversary!
+                    Selamat Datang Di Website Batik Tegal
                   </h3>
                   <p className="text-brown-800/90 mb-6 text-sm leading-relaxed">
-                    Dapatkan Promo Hingga 15% untuk pembelian minimal Rp
-                    500.000. Promo hingga 1 Juli 2026, S&K Berlaku.
+                    Dapatkan  batik yang anda ingin terdekat dengan kualitas terbaik khas tegal
                   </p>
-                  <button className="bg-orange-500 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-orange-600 transition text-sm">
-                    Lihat Ketentuan
-                  </button>
                 </div>
               </div>
             </div>

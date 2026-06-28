@@ -19,9 +19,23 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+const DUMMY_ADMIN = {
+  username: "admin@gmail.com",
+  password: "admin123",
+  token: "dummy-admin-token",
+};
+
+const DUMMY_USER = {
+  username: "user@gmail.com",
+  password: "user123",
+  name: "User",
+  token: "dummy-user-token",
+};
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const loginUser = useAuthStore((state) => state.loginUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,8 +46,8 @@ const AdminLogin = () => {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      username: DUMMY_ADMIN.username,
+      password: DUMMY_ADMIN.password,
     },
   });
 
@@ -42,10 +56,27 @@ const AdminLogin = () => {
 
     setLoading(true);
     try {
+      if (
+        data.username === DUMMY_ADMIN.username &&
+        data.password === DUMMY_ADMIN.password
+      ) {
+        login(DUMMY_ADMIN.token);
+        navigate("/admin/dashboard");
+        return;
+      }
+
+      if (
+        data.username === DUMMY_USER.username &&
+        data.password === DUMMY_USER.password
+      ) {
+        loginUser(DUMMY_USER.token, DUMMY_USER.name);
+        navigate("/");
+        return;
+      }
+
       const res = await adminApi.login(data);
       const token = res.data?.token;
       if (token) {
-        localStorage.setItem("adminToken", token);
         login(token);
         navigate("/admin/dashboard");
       } else {
@@ -185,29 +216,6 @@ const AdminLogin = () => {
                   {loading ? "Memproses..." : "Masuk"}
                 </Button>
               </form>
-
-              <div className="mt-5 text-center text-xs text-[#4b423b]">
-                Atau masuk dengan
-              </div>
-
-              <div className="mt-4 flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  aria-label="Masuk dengan Google"
-                  className="flex h-[26px] w-[58px] items-center justify-center rounded-full bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <span className="text-base font-bold text-[#4285f4]">G</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Masuk dengan Facebook"
-                  className="flex h-[26px] w-[58px] items-center justify-center rounded-full bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#1da1f2] text-xs font-bold leading-none text-white">
-                    f
-                  </span>
-                </button>
-              </div>
 
               <p className="mt-6 text-center text-xs text-[#4b423b]">
                 Belum punya akun?{" "}

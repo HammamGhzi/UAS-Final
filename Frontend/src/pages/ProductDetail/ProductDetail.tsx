@@ -78,7 +78,9 @@ const ProductDetail = () => {
   useParams();
   const navigate = useNavigate();
   const product = DUMMY_PRODUCT;
-  const isLoggedIn = Boolean(localStorage.getItem('adminToken'));
+  const isLoggedIn = Boolean(
+    localStorage.getItem('adminToken') || localStorage.getItem('userToken')
+  );
 
   const [reviews, setReviews] = useState(DUMMY_REVIEWS);
   const [selectedSize, setSelectedSize] = useState('L');
