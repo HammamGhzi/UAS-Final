@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/UI/Button";
 import { Input } from "../../components/UI/Input";
 import { adminApi } from "../../services/api";
-import { ArrowLeft, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -107,18 +108,25 @@ const AdminLogin = () => {
                   <div className="relative">
                     <Input
                       name="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Password"
                       value={form.password}
                       onChange={handleChange}
                       disabled={loading}
                       className="h-[30px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                     />
-                    <EyeOff
-                      size={13}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-brown-300"
-                      aria-hidden="true"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-brown-300 transition hover:text-brown-700"
+                      aria-label={
+                        showPassword
+                          ? "Sembunyikan password"
+                          : "Tampilkan password"
+                      }
+                    >
+                      {showPassword ? <Eye size={13} /> : <EyeOff size={13} />}
+                    </button>
                   </div>
                 </div>
 
