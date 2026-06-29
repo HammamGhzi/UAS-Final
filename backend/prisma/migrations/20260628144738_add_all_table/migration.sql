@@ -142,11 +142,7 @@ CREATE TABLE `spk_sessions` (
     `maxPrice` DECIMAL(12, 0) NOT NULL DEFAULT 999999999,
     `userLat` DECIMAL(10, 8) NOT NULL,
     `userLon` DECIMAL(11, 8) NOT NULL,
-    `wPrice` DECIMAL(5, 4) NOT NULL,
-    `wDistance` DECIMAL(5, 4) NOT NULL,
-    `wQuality` DECIMAL(5, 4) NOT NULL,
-    `wPopularity` DECIMAL(5, 4) NOT NULL,
-    `wDesign` DECIMAL(5, 4) NOT NULL,
+    `weightHistoryId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`sessionId`)
@@ -191,6 +187,9 @@ ALTER TABLE `recommendation_histories` ADD CONSTRAINT `recommendation_histories_
 
 -- AddForeignKey
 ALTER TABLE `recommendation_histories` ADD CONSTRAINT `recommendation_histories_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `batik_categories`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `spk_sessions` ADD CONSTRAINT `spk_sessions_weightHistoryId_fkey` FOREIGN KEY (`weightHistoryId`) REFERENCES `weight_histories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `recommendation_results` ADD CONSTRAINT `recommendation_results_recommendationId_fkey` FOREIGN KEY (`recommendationId`) REFERENCES `recommendation_histories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
