@@ -1,32 +1,36 @@
-import { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
 
-const Dashboard = () => {
-  const [stats, setStats] = useState({
-    totalSanggar: 0,
-    totalProduk: 0,
-    totalReview: 0,
-    totalMotif: 0,
-  });
+type DashboardStats = {
+  totalSanggar: number;
+  totalProduk: number;
+  totalReview: number;
+  totalMotif: number;
+};
 
-  const { data: dashboardData } = useQuery(
-    ['dashboard'],
-    () => adminApi.getDashboard(),
-    {
-      onSuccess: (data) => {
-        setStats({
-          totalSanggar: data.totalSanggar || 0,
-          totalProduk: data.totalProduk || 0,
-          totalReview: data.totalReview || 0,
-          totalMotif: data.totalMotif || 0,
-        });
-      },
-    }
-  );
+const emptyStats: DashboardStats = {
+  totalSanggar: 0,
+  totalProduk: 0,
+  totalReview: 0,
+  totalMotif: 0,
+};
+
+const Dashboard = () => {
+  const { data: stats = emptyStats } = useQuery<DashboardStats>({
+    queryKey: ['dashboard'],
+    queryFn: async () => {
+      const { data } = await adminApi.getDashboard();
+      return {
+        totalSanggar: data.totalSanggar || 0,
+        totalProduk: data.totalProduk || 0,
+        totalReview: data.totalReview || 0,
+        totalMotif: data.totalMotif || 0,
+      };
+    },
+  });
 
   const chartData = [
     { name: 'Sanggar', value: stats.totalSanggar },

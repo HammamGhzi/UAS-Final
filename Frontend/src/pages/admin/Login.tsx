@@ -25,6 +25,12 @@ const DUMMY_ADMIN = {
   token: "dummy-admin-token",
 };
 
+const DUMMY_ADMIN_SANGGAR = {
+  username: "sanggar@gmail.com",
+  password: "sanggar123",
+  token: "dummy-admin-sanggar-token",
+};
+
 const DUMMY_USER = {
   username: "user@gmail.com",
   password: "user123",
@@ -62,6 +68,15 @@ const AdminLogin = () => {
       ) {
         login(DUMMY_ADMIN.token);
         navigate("/admin/dashboard");
+        return;
+      }
+
+      if (
+        data.username === DUMMY_ADMIN_SANGGAR.username &&
+        data.password === DUMMY_ADMIN_SANGGAR.password
+      ) {
+        login(DUMMY_ADMIN_SANGGAR.token);
+        navigate("/admin-sanggar");
         return;
       }
 
@@ -219,7 +234,13 @@ const AdminLogin = () => {
 
               <p className="mt-6 text-center text-xs text-[#4b423b]">
                 Belum punya akun?{" "}
-                <span className="font-bold text-[#6aa300]">Daftar Disini</span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/form/register")}
+                  className="font-bold text-[#6aa300] transition hover:text-[#4d7a00]"
+                >
+                  Daftar Disini
+                </button>
               </p>
             </div>
           </div>

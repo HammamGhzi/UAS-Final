@@ -28,7 +28,6 @@ model User {
 
   sanggars  Sanggar[] // Sanggar yang dikelola Admin
   reviews   Review[]  // Review yang ditulis oleh User
-  // createdScores ProductScore[]
 
   @@map("users")
 }
@@ -40,7 +39,6 @@ model Region {
   updatedAt DateTime @updatedAt
 
   sanggars                Sanggar[]
-  recommendationHistories RecommendationHistory[]
 
   @@map("regions")
 }
@@ -77,7 +75,6 @@ model BatikCategory {
   updatedAt DateTime @updatedAt
 
   products                Product[]
-  recommendationHistories RecommendationHistory[]
 
   @@map("batik_categories")
 }
@@ -97,8 +94,6 @@ model Product {
   sanggar Sanggar       @relation(fields: [sanggarId], references: [id], onDelete: Cascade)
   category BatikCategory @relation(fields: [categoryId], references: [id])
   reviews  Review[]
-  // score    ProductScore?
-  recommendationResults RecommendationResult[]
 
   @@index([sanggarId])
   @@index([categoryId])
@@ -137,22 +132,6 @@ model Criteria {
   @@map("criterias")
 }
 
-//model ProductScore {
-//  id             Int      @id @default(autoincrement())
-//  productId      Int      @unique
-//  qualityAvg     Decimal  @db.Decimal(5, 2)
-//  popularityAvg  Decimal  @db.Decimal(5, 2)
-//  designAvg      Decimal  @db.Decimal(5, 2)
-//  adminId        Int
-//  createdAt      DateTime @default(now())
-//  updatedAt      DateTime @updatedAt
-//
-//  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-//  admin   User    @relation(fields: [adminId], references: [id])
-//
-//  @@map("product_scores")
-//}
-
 model WeightHistory {
   id                 Int      @id @default(autoincrement())
   priceWeight        Decimal  @db.Decimal(5, 4)
@@ -162,36 +141,10 @@ model WeightHistory {
   designWeight       Decimal  @db.Decimal(5, 4)
   createdAt          DateTime @default(now())
 
-  recommendations RecommendationHistory[]
-
   spkSessions        SpkSession[]
 
   @@map("weight_histories")
 }
-
-//model RecommendationHistory {
-//  id              Int      @id @default(autoincrement())
-//  weightHistoryId Int
-//  regionId        Int?
-//  categoryId      Int?
-//  latitude        Decimal  @db.Decimal(10, 8)
-//  longitude       Decimal  @db.Decimal(11, 8)
-//  minPrice        Decimal? @db.Decimal(12, 0)
-//  maxPrice        Decimal? @db.Decimal(12, 0)
-//  createdAt       DateTime @default(now())
-//
-//  weightHistory WeightHistory @relation(fields: [weightHistoryId], references: [id])
-//  region        Region?       @relation(fields: [regionId], references: [id])
-//  category      BatikCategory? @relation(fields: [categoryId], references: [id])
-//
-//  results RecommendationResult[]
-//
-//  @@index([regionId])
-//  @@index([categoryId])
-//  @@index([createdAt])
-//
-//  @@map("recommendation_histories")
-//}
 
 // Tabel Sesi Pencarian SPK (Sangat Penting)
 model SpkSession {
@@ -214,20 +167,3 @@ model SpkSession {
 
   @@map("spk_sessions")
 }
-
-//model RecommendationResult {
-//  id               Int      @id @default(autoincrement())
-//  recommendationId Int
-//  productId        Int
-//  preferenceValue  Decimal  @db.Decimal(8, 5)
-//  ranking          Int
-//
-//  recommendation RecommendationHistory @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
-//  product        Product               @relation(fields: [productId], references: [id])
-//
-//  @@unique([recommendationId, productId])
-//
-//  @@index([productId])
-//
-//  @@map("recommendation_results")
-//}

@@ -115,24 +115,6 @@ CREATE TABLE `weight_histories` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `recommendation_histories` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `weightHistoryId` INTEGER NOT NULL,
-    `regionId` INTEGER NULL,
-    `categoryId` INTEGER NULL,
-    `latitude` DECIMAL(10, 8) NOT NULL,
-    `longitude` DECIMAL(11, 8) NOT NULL,
-    `minPrice` DECIMAL(12, 0) NULL,
-    `maxPrice` DECIMAL(12, 0) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    INDEX `recommendation_histories_regionId_idx`(`regionId`),
-    INDEX `recommendation_histories_categoryId_idx`(`categoryId`),
-    INDEX `recommendation_histories_createdAt_idx`(`createdAt`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `spk_sessions` (
     `sessionId` VARCHAR(100) NOT NULL,
     `userId` INTEGER NOT NULL,
@@ -146,19 +128,6 @@ CREATE TABLE `spk_sessions` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`sessionId`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `recommendation_results` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `recommendationId` INTEGER NOT NULL,
-    `productId` INTEGER NOT NULL,
-    `preferenceValue` DECIMAL(8, 5) NOT NULL,
-    `ranking` INTEGER NOT NULL,
-
-    INDEX `recommendation_results_productId_idx`(`productId`),
-    UNIQUE INDEX `recommendation_results_recommendationId_productId_key`(`recommendationId`, `productId`),
-    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -180,19 +149,4 @@ ALTER TABLE `reviews` ADD CONSTRAINT `reviews_productId_fkey` FOREIGN KEY (`prod
 ALTER TABLE `reviews` ADD CONSTRAINT `reviews_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `recommendation_histories` ADD CONSTRAINT `recommendation_histories_weightHistoryId_fkey` FOREIGN KEY (`weightHistoryId`) REFERENCES `weight_histories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `recommendation_histories` ADD CONSTRAINT `recommendation_histories_regionId_fkey` FOREIGN KEY (`regionId`) REFERENCES `regions`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `recommendation_histories` ADD CONSTRAINT `recommendation_histories_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `batik_categories`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `spk_sessions` ADD CONSTRAINT `spk_sessions_weightHistoryId_fkey` FOREIGN KEY (`weightHistoryId`) REFERENCES `weight_histories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `recommendation_results` ADD CONSTRAINT `recommendation_results_recommendationId_fkey` FOREIGN KEY (`recommendationId`) REFERENCES `recommendation_histories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `recommendation_results` ADD CONSTRAINT `recommendation_results_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `products`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
