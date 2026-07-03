@@ -7,7 +7,6 @@ import {
   Package,
   PencilLine,
   Store,
-  WalletCards,
   X,
 } from "lucide-react";
 import { Button } from "../../components/UI/Button";
@@ -26,7 +25,6 @@ import {
 
 const stats = [
   { label: "Produk aktif", value: "0", icon: Package },
-  { label: "Pesanan bulan ini", value: "0", icon: WalletCards },
   { label: "Rating toko", value: "-", icon: CheckCircle2 },
 ];
 
@@ -126,37 +124,65 @@ const AdminSanggarDashboard = () => {
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         {submitted && complete ? (
-          <div className="rounded-[28px] border border-[#d6d6d6] bg-white px-8 py-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
-                  <Store size={28} />
-                </div>
-                <h2 className="mt-5 text-[30px] font-extrabold text-[#2f2f2f]">
-                  {draft.name}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#777777]">
-                  {draft.description || "Sanggar batik siap dikelola."}
-                </p>
-              </div>
+          <div className="overflow-visible rounded-[28px] border border-[#d6d6d6] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            {/* Cover */}
+            <div className="relative h-[150px] w-full overflow-hidden rounded-t-[28px] bg-[linear-gradient(120deg,#ff9800,#ffb84d)]">
+              {draft.image && (
+                <img
+                  src={draft.image}
+                  alt={draft.name}
+                  onError={(event) => {
+                    (event.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/10" />
+
+              <span className="absolute right-6 top-6 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-[#2f8f4e] shadow-sm">
+                Toko Aktif
+              </span>
 
               <Button
                 type="button"
                 onClick={handleEditStore}
-                className="rounded-full bg-[#252525] px-6 text-white hover:bg-black"
+                className="absolute bottom-5 right-6 rounded-full bg-white px-5 text-[#252525] shadow-md hover:bg-[#f2f2f2]"
               >
-                <PencilLine size={17} />
+                <PencilLine size={16} />
                 Edit Data
               </Button>
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <SummaryItem label="Wilayah" value={selectedRegion} />
-              <SummaryItem label="Nama Pemilik" value={draft.ownerName} />
-              <SummaryItem label="Nomor HP" value={draft.phone || "-"} />
-              <SummaryItem label="Koordinat" value={`${draft.latitude}, ${draft.longitude}`} />
-              <SummaryItem label="Alamat" value={draft.address} wide />
-              <SummaryItem label="URL Gambar" value={draft.image || "-"} wide />
+            {/* Body - centered */}
+            <div className="flex flex-col items-center px-8 pb-9 text-center">
+              <div className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white bg-white shadow-md">
+                <Store size={30} className="text-[#ff9800]" />
+              </div>
+
+              <h2 className="mt-4 text-[26px] font-extrabold leading-tight text-[#2f2f2f]">
+                {draft.name}
+              </h2>
+              <p className="text-sm font-medium text-[#ff9800]">{selectedRegion}</p>
+
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#666666]">
+                {draft.description || "Sanggar batik siap dikelola."}
+              </p>
+
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  to="/admin-sanggar/products"
+                  className="flex items-center gap-2 rounded-full bg-[#b6ec00] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#9fd000]"
+                >
+                  <Package size={17} />
+                  Kelola Produk
+                </Link>
+                <Link
+                  to="/admin-sanggar/settings"
+                  className="flex items-center gap-2 rounded-full border border-[#d6d6d6] px-6 py-3 text-sm font-bold text-[#3e3e3e] transition hover:bg-[#f5f5f5]"
+                >
+                  Lihat Detail Toko
+                </Link>
+              </div>
             </div>
           </div>
         ) : (
@@ -297,25 +323,6 @@ const AdminSanggarDashboard = () => {
     </div>
   );
 };
-
-const SummaryItem = ({
-  label,
-  value,
-  wide = false,
-}: {
-  label: string;
-  value: string;
-  wide?: boolean;
-}) => (
-  <div
-    className={`rounded-[22px] border border-[#e4e4e4] bg-[#f7f8fd] px-5 py-4 ${
-      wide ? "md:col-span-2" : ""
-    }`}
-  >
-    <p className="text-xs font-bold uppercase text-[#777777]">{label}</p>
-    <p className="mt-2 break-words text-[17px] font-bold text-[#333333]">{value}</p>
-  </div>
-);
 
 const Field = ({
   label,

@@ -28,42 +28,17 @@ const roles = [
   },
 ] as const;
 
-const regions = [
-  { id: "1", name: "Tegal Barat" },
-  { id: "2", name: "Tegal Timur" },
-  { id: "3", name: "Tegal Selatan" },
-  { id: "4", name: "Margadana" },
-  { id: "5", name: "Slawi" },
-];
-
-const registerSchema = z
-  .object({
-    email: z.string().min(1, "Email wajib diisi.").email("Format email belum valid."),
-    password: z.string().min(6, "Password minimal 6 karakter."),
-    confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi."),
-    role: z.enum(["ADMIN", "USER"]),
-    name: z.string().optional(),
-    phone: z.string().optional(),
-    regionId: z.string().optional(),
-    sanggarName: z.string().optional(),
-    ownerName: z.string().optional(),
-    address: z.string().optional(),
-    latitude: z.string().optional(),
-    longitude: z.string().optional(),
-    description: z.string().optional(),
-    image: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Konfirmasi password belum sama.",
-    path: ["confirmPassword"],
-  });
+const registerSchema = z.object({
+  email: z.string().min(1, "Email wajib diisi.").email("Format email belum valid."),
+  role: z.enum(["ADMIN", "USER"]),
+  password: z.string().min(6, "Password minimal 6 karakter."),
+});
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
 const AdminRegister = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState("");
 
   const {
@@ -75,20 +50,9 @@ const AdminRegister = () => {
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
       email: "",
-      phone: "",
       role: "ADMIN",
-      regionId: "",
-      sanggarName: "",
-      ownerName: "",
-      address: "",
-      latitude: "",
-      longitude: "",
-      description: "",
-      image: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
@@ -96,16 +60,18 @@ const AdminRegister = () => {
 
   const onSubmit = (data: RegisterForm) => {
     if (data.role === "ADMIN") {
-      // Save an empty draft; admin will complete sanggar details in dashboard
+      // Akun sanggar dibuat tanpa data toko dulu.
+      // Data toko baru diisi nanti di halaman dashboard admin-sanggar
+      // (form otomatis muncul selama toko belum lengkap / belum di-submit).
       saveSanggarDraft(emptySanggarDraft);
-      setSanggarSubmitted(true);
+      setSanggarSubmitted(false);
       setSanggarBannerDismissed(false);
       navigate("/admin-sanggar");
       return;
     }
 
     setSuccess(
-      `Desain register siap. Akun ${data.name} akan dibuat sebagai ${roles.find((role) => role.value === data.role)?.title}.`
+      `Desain register siap. Akun ${data.email} akan dibuat sebagai ${roles.find((role) => role.value === data.role)?.title}.`
     );
   };
 
@@ -194,227 +160,42 @@ const AdminRegister = () => {
                   <p className="text-xs text-red-500">{errors.role.message}</p>
                 )}
 
+                {/* Field di bawah ini SAMA untuk ADMIN (Admin Sanggar) maupun USER (User Biasa).
+                    Disesuaikan dengan model User di Prisma: cuma email, password, role.
+                    Data toko/sanggar untuk ADMIN diisi belakangan di dashboard admin-sanggar. */}
                 <div>
                   <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                    Nama Lengkap
+                    Email
                   </label>
                   <Input
-                    type="text"
-                    placeholder="Nama kamu"
-                    {...register("name", { onChange: () => setSuccess("") })}
-                    error={errors.name?.message}
+                    type="email"
+                    placeholder="nama@gmail.com"
+                    {...register("email", { onChange: () => setSuccess("") })}
+                    error={errors.email?.message}
                     className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                   />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                      Email
-                    </label>
+                <div>
+                  <label className="mb-2 block text-xs font-medium text-[#4b423b]">
+                    Password
+                  </label>
+                  <div className="relative">
                     <Input
-                      type="email"
-                      placeholder="nama@gmail.com"
-                      {...register("email", { onChange: () => setSuccess("") })}
-                      error={errors.email?.message}
-                      className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      {...register("password", { onChange: () => setSuccess("") })}
+                      error={errors.password?.message}
+                      className="h-[32px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                     />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                      Nomor HP
-                    </label>
-                    <Input
-                      type="tel"
-                      placeholder="08xxxxxxxxxx"
-                      {...register("phone", { onChange: () => setSuccess("") })}
-                      error={errors.phone?.message}
-                      className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                    />
-                  </div>
-                </div>
-
-                {selectedRole === "ADMIN" && (
-                  <div className="rounded-2xl border border-white/80 bg-white/55 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-bold text-[#3f342c]">
-                          Data Sanggar
-                        </p>
-                        <p className="mt-0.5 text-[10px] font-medium text-[#7b6b5d]">
-                          Disesuaikan dengan model sanggar di Prisma.
-                        </p>
-                      </div>
-                      <Store size={18} className="text-[#6aa300]" />
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Wilayah
-                        </label>
-                        <select
-                          {...register("regionId", { onChange: () => setSuccess("") })}
-                          className="h-[32px] w-full rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none outline-none focus:ring-2 focus:ring-[#b4ed00]"
-                        >
-                          <option value="">Pilih wilayah</option>
-                          {regions.map((region) => (
-                            <option key={region.id} value={region.id}>
-                              {region.name}
-                            </option>
-                          ))}
-                        </select>
-                        {errors.regionId && (
-                          <p className="mt-1 text-sm text-red-500">
-                            {errors.regionId.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Nama Sanggar
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Toko Batik Kaisar Gadai"
-                          {...register("sanggarName", { onChange: () => setSuccess("") })}
-                          error={errors.sanggarName?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Nama Pemilik
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Nama pemilik"
-                          {...register("ownerName", { onChange: () => setSuccess("") })}
-                          error={errors.ownerName?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Alamat Lengkap
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Jl. Batik Tegal No. 12"
-                          {...register("address", { onChange: () => setSuccess("") })}
-                          error={errors.address?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Latitude
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="-6.86940000"
-                          {...register("latitude", { onChange: () => setSuccess("") })}
-                          error={errors.latitude?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Longitude
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="109.14020000"
-                          {...register("longitude", { onChange: () => setSuccess("") })}
-                          error={errors.longitude?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          Deskripsi
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Ciri khas sanggar"
-                          {...register("description", { onChange: () => setSuccess("") })}
-                          error={errors.description?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                          URL Gambar
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="https://..."
-                          {...register("image", { onChange: () => setSuccess("") })}
-                          error={errors.image?.message}
-                          className="h-[32px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Password"
-                        {...register("password", { onChange: () => setSuccess("") })}
-                        error={errors.password?.message}
-                        className="h-[32px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((current) => !current)}
-                        className="absolute right-4 top-4 text-brown-300 transition hover:text-brown-700"
-                        aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                      >
-                        {showPassword ? <Eye size={13} /> : <EyeOff size={13} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                      Konfirmasi
-                    </label>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Ulangi password"
-                        {...register("confirmPassword", { onChange: () => setSuccess("") })}
-                        error={errors.confirmPassword?.message}
-                        className="h-[32px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword((current) => !current)}
-                        className="absolute right-4 top-4 text-brown-300 transition hover:text-brown-700"
-                        aria-label={
-                          showConfirmPassword
-                            ? "Sembunyikan konfirmasi password"
-                            : "Tampilkan konfirmasi password"
-                        }
-                      >
-                        {showConfirmPassword ? <Eye size={13} /> : <EyeOff size={13} />}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute right-4 top-4 text-brown-300 transition hover:text-brown-700"
+                      aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showPassword ? <Eye size={13} /> : <EyeOff size={13} />}
+                    </button>
                   </div>
                 </div>
 
@@ -438,7 +219,7 @@ const AdminRegister = () => {
                 Sudah punya akun?{" "}
                 <button
                   type="button"
-                  onClick={() => navigate("/admin/login")}
+                  onClick={() => navigate("//login")}
                   className="font-bold text-[#6aa300] transition hover:text-[#4d7a00]"
                 >
                   Masuk Disini
