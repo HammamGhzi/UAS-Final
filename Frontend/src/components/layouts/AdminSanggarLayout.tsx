@@ -1,10 +1,11 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Boxes, LayoutGrid, LogOut, Menu, Settings, Store } from "lucide-react";
+import { Boxes, LayoutGrid, LogOut, Menu, Settings, Star, Store } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 const sidebarItems = [
   { to: "/admin-sanggar", icon: LayoutGrid, label: "Utama", section: "Utama" },
   { to: "/admin-sanggar/products", icon: Boxes, label: "Produk", section: "Kelola" },
+  { to: "/admin-sanggar/reviews", icon: Star, label: "Riwayat Rating", section: "Kelola" },
   { to: "/admin-sanggar/settings", icon: Settings, label: "Setelan", section: "Kelola" },
 ];
 
