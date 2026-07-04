@@ -6,7 +6,9 @@ import {
   MapPin,
   Package,
   PencilLine,
+  Phone,
   Store,
+  User,
   X,
 } from "lucide-react";
 import { Button } from "../../components/UI/Button";
@@ -45,6 +47,7 @@ const AdminSanggarDashboard = () => {
     isSanggarBannerDismissed()
   );
   const [saved, setSaved] = useState(false);
+  const [imageError, setImageError] = useState("");
 
   const missingFields = useMemo(() => getMissingSanggarFields(draft), [draft]);
   const complete = isSanggarComplete(draft);
@@ -53,6 +56,32 @@ const AdminSanggarDashboard = () => {
   const handleChange = (field: keyof SanggarDraft, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
     setSaved(false);
+  };
+
+  const handleImageFile = (file: File | undefined) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setImageError("File harus berupa gambar (jpg, png, dll).");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setImageError("Ukuran gambar maksimal 2MB.");
+      return;
+    }
+
+    setImageError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      handleChange("image", reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    handleChange("image", "");
+    setImageError("");
   };
 
   const handleSubmitStore = () => {
@@ -90,7 +119,7 @@ const AdminSanggarDashboard = () => {
     regions.find((region) => region.id === draft.regionId)?.name || "-";
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto w-full max-w-6xl space-y-8">
       {showGreenBanner && (
         <section className="relative overflow-hidden rounded-[34px] bg-[linear-gradient(115deg,#0d9869,#2f554d)] px-10 py-9 text-white shadow-[0_24px_50px_rgba(28,76,61,0.16)] lg:px-[84px]">
           <button
@@ -122,31 +151,70 @@ const AdminSanggarDashboard = () => {
         </section>
       )}
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        {submitted && complete ? (
-          <div className="overflow-visible rounded-[28px] border border-[#d6d6d6] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            {/* Cover */}
-            <div className="relative h-[150px] w-full overflow-hidden rounded-t-[28px] bg-[linear-gradient(120deg,#ff9800,#ffb84d)]">
-              {draft.image && (
-                <img
-                  src={draft.image}
-                  alt={draft.name}
-                  onError={(event) => {
-                    (event.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              )}
-              <div className="absolute inset-0 bg-black/10" />
+      <section className="space-y-6">
+        <div className="grid gap-5 sm:grid-cols-3">
+          {stats.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="rounded-[26px] border border-[#d6d6d6] bg-white px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)]"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#777777]">{item.label}</p>
+                    <p className="mt-3 text-[34px] font-extrabold leading-none text-[#222222]">
+                      {submitted && complete ? item.value : "-"}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
+                    <Icon size={25} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
-              <span className="absolute right-6 top-6 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-[#2f8f4e] shadow-sm">
+          <div className="rounded-[26px] border border-[#d6d6d6] bg-white px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)]">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
+                <ImagePlus size={22} />
+              </div>
+              <Link
+                to={submitted && complete ? "/admin-sanggar/products" : "/admin-sanggar"}
+                className={`flex shrink-0 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition ${
+                  submitted && complete
+                    ? "bg-[#b6ec00] text-white hover:bg-[#9fd000]"
+                    : "bg-[#252525] text-white hover:bg-black"
+                }`}
+              >
+                {submitted && complete ? <Package size={15} /> : <MapPin size={15} />}
+                {submitted && complete ? "Kelola Produk" : "Lengkapi Data"}
+              </Link>
+            </div>
+            <h3 className="mt-4 text-xl font-bold text-[#333333]">
+              {submitted && complete ? "Status Toko" : "Syarat Toko"}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#777777]">
+              {submitted && complete
+                ? "Toko sudah aktif. Menu produk bisa digunakan untuk simulasi CRUD."
+                : "Isi semua data wajib lalu submit supaya banner hijau dan card toko muncul."}
+            </p>
+          </div>
+        </div>
+
+        {submitted && complete ? (
+          <div className="overflow-visible rounded-[28px] border border-[#d6d6d6] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.05)]">
+            {/* Header - no banner */}
+            <div className="flex items-center justify-between px-8 pt-6">
+              <span className="rounded-full bg-[#eafaf0] px-4 py-1.5 text-xs font-bold text-[#2f8f4e]">
                 Toko Aktif
               </span>
 
               <Button
                 type="button"
                 onClick={handleEditStore}
-                className="absolute bottom-5 right-6 rounded-full bg-white px-5 text-[#252525] shadow-md hover:bg-[#f2f2f2]"
+                className="rounded-full border border-[#d6d6d6] bg-white px-5 text-[#252525] hover:bg-[#f5f5f5]"
               >
                 <PencilLine size={16} />
                 Edit Data
@@ -154,9 +222,17 @@ const AdminSanggarDashboard = () => {
             </div>
 
             {/* Body - centered */}
-            <div className="flex flex-col items-center px-8 pb-9 text-center">
-              <div className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white bg-white shadow-md">
-                <Store size={30} className="text-[#ff9800]" />
+            <div className="flex flex-col items-center px-8 pb-9 pt-6 text-center">
+              <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-2xl bg-[#fff4df] shadow-[0_8px_20px_rgba(0,0,0,0.06)]">
+                {draft.image ? (
+                  <img
+                    src={draft.image}
+                    alt={draft.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Store size={30} className="text-[#ff9800]" />
+                )}
               </div>
 
               <h2 className="mt-4 text-[26px] font-extrabold leading-tight text-[#2f2f2f]">
@@ -167,6 +243,36 @@ const AdminSanggarDashboard = () => {
               <p className="mt-4 max-w-md text-sm leading-relaxed text-[#666666]">
                 {draft.description || "Sanggar batik siap dikelola."}
               </p>
+
+              <div className="mt-6 grid w-full max-w-lg gap-3 border-t border-[#eeeeee] pt-6 sm:grid-cols-3">
+                <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-[#f7f8fa] px-4 py-3.5">
+                  <User size={18} className="text-[#ff9800]" />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999999]">
+                    Pemilik
+                  </p>
+                  <p className="text-sm font-bold text-[#333333]">
+                    {draft.ownerName || "-"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-[#f7f8fa] px-4 py-3.5">
+                  <Phone size={18} className="text-[#ff9800]" />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999999]">
+                    Kontak
+                  </p>
+                  <p className="text-sm font-bold text-[#333333]">
+                    {draft.phone || "-"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-[#f7f8fa] px-4 py-3.5">
+                  <MapPin size={18} className="text-[#ff9800]" />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999999]">
+                    Alamat
+                  </p>
+                  <p className="line-clamp-1 text-sm font-bold text-[#333333]" title={draft.address}>
+                    {draft.address || "-"}
+                  </p>
+                </div>
+              </div>
 
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link
@@ -186,7 +292,7 @@ const AdminSanggarDashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-[28px] border border-[#d6d6d6] bg-white px-8 py-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <div className="rounded-[28px] border border-[#d6d6d6] bg-white px-8 py-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.05)]">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-[22px] font-bold text-[#3e3e3e]">
@@ -221,7 +327,49 @@ const AdminSanggarDashboard = () => {
               <Field label="Nomor HP" value={draft.phone} placeholder="08xxxxxxxxxx" onChange={(value) => handleChange("phone", value)} />
               <Field label="Latitude" value={draft.latitude} placeholder="-6.86940000" onChange={(value) => handleChange("latitude", value)} />
               <Field label="Longitude" value={draft.longitude} placeholder="109.14020000" onChange={(value) => handleChange("longitude", value)} />
-              <Field label="URL Gambar" value={draft.image} placeholder="https://..." onChange={(value) => handleChange("image", value)} />
+
+              <div className="space-y-2 md:col-span-2">
+                <span className="text-[17px] font-bold text-[#444444]">Foto Sanggar</span>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd]">
+                    {draft.image ? (
+                      <img src={draft.image} alt="Preview toko" className="h-full w-full object-cover" />
+                    ) : (
+                      <ImagePlus size={26} className="text-[#a8a8a8]" />
+                    )}
+                  </div>
+
+                  <div className="flex flex-1 flex-col gap-2">
+                    <div className="flex flex-wrap gap-3">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#252525] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-black">
+                        <ImagePlus size={16} />
+                        {draft.image ? "Ganti Foto" : "Upload Foto"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => handleImageFile(event.target.files?.[0])}
+                        />
+                      </label>
+                      {draft.image && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="rounded-full border border-[#d6d6d6] px-5 py-2.5 text-sm font-bold text-[#666666] transition hover:bg-[#f5f5f5]"
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#888888]">
+                      Format JPG/PNG, maksimal 2MB. Disimpan langsung di perangkat ini.
+                    </p>
+                    {imageError && (
+                      <p className="text-xs font-semibold text-red-500">{imageError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <label className="mt-5 block space-y-2">
@@ -271,54 +419,6 @@ const AdminSanggarDashboard = () => {
             )}
           </div>
         )}
-
-        <aside className="space-y-5">
-          {stats.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.label}
-                className="rounded-[26px] border border-[#d6d6d6] bg-white px-6 py-6"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-[#777777]">{item.label}</p>
-                    <p className="mt-3 text-[34px] font-extrabold text-[#222222]">
-                      {submitted && complete ? item.value : "-"}
-                    </p>
-                  </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
-                    <Icon size={25} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          <div className="rounded-[26px] border border-[#d6d6d6] bg-white px-6 py-6">
-            <ImagePlus className="text-[#ff9800]" size={28} />
-            <h3 className="mt-4 text-xl font-bold text-[#333333]">
-              {submitted && complete ? "Status Toko" : "Syarat Toko"}
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#777777]">
-              {submitted && complete
-                ? "Toko sudah aktif. Menu produk bisa digunakan untuk simulasi CRUD."
-                : "Isi semua data wajib lalu submit supaya banner hijau dan card toko muncul."}
-            </p>
-          </div>
-
-          <Link
-            to={submitted && complete ? "/admin-sanggar/products" : "/admin-sanggar"}
-            className={`flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold transition ${
-              submitted && complete
-                ? "bg-[#b6ec00] text-white hover:bg-[#9fd000]"
-                : "bg-[#252525] text-white hover:bg-black"
-            }`}
-          >
-            {submitted && complete ? <Package size={18} /> : <MapPin size={18} />}
-            {submitted && complete ? "Kelola Produk" : "Lengkapi Data Toko"}
-          </Link>
-        </aside>
       </section>
     </div>
   );

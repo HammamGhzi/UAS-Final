@@ -13,10 +13,6 @@ const AdminSanggarLayout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
-  const activeItem =
-    sidebarItems.find((item) => location.pathname === item.to) ?? sidebarItems[0];
-  const activeSection = activeItem.section;
-
   const handleLogout = () => {
     logout();
     navigate("/admin/login");
@@ -66,8 +62,8 @@ const AdminSanggarLayout = () => {
       </aside>
 
       <div className="min-h-screen pl-[88px]">
-        <header className="flex h-[92px] items-center justify-center px-8">
-          <div className="absolute right-9 top-6 flex items-center gap-3">
+        <header className="flex h-[92px] items-center justify-end px-8">
+          <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
               <Store size={20} className="text-[#b6ec00]" />
             </div>
@@ -75,22 +71,6 @@ const AdminSanggarLayout = () => {
               <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">Hammam</p>
               <p className="text-[13px] leading-tight text-[#555555]">Admin Sanggar</p>
             </div>
-          </div>
-
-          <div className="grid h-[58px] w-[292px] grid-cols-2 rounded-full border border-[#d9d9d9] bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            {["Utama", "Kelola"].map((section) => (
-              <Link
-                key={section}
-                to={section === "Utama" ? "/admin-sanggar" : "/admin-sanggar/products"}
-                className={`flex items-center justify-center rounded-full text-[20px] transition ${
-                  activeSection === section
-                    ? "bg-[#eeeeee] font-bold text-[#111111]"
-                    : "font-medium text-[#3d3d3d] hover:bg-[#f6f6f6]"
-                }`}
-              >
-                {section}
-              </Link>
-            ))}
           </div>
         </header>
 
