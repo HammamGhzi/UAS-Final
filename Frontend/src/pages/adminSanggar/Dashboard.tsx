@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import {
   CheckCircle2,
   ImagePlus,
@@ -13,16 +15,16 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/UI/Button";
 import {
-  fieldLabels,
-  getMissingSanggarFields,
   getStoredSanggarDraft,
   isSanggarBannerDismissed,
   isSanggarComplete,
   isSanggarSubmitted,
   saveSanggarDraft,
+  sanggarSchema,
   setSanggarBannerDismissed,
   setSanggarSubmitted,
   type SanggarDraft,
+  type SanggarFormValues,
 } from "./sanggarDraft";
 
 const stats = [
@@ -49,14 +51,22 @@ const AdminSanggarDashboard = () => {
   const [saved, setSaved] = useState(false);
   const [imageError, setImageError] = useState("");
 
-  const missingFields = useMemo(() => getMissingSanggarFields(draft), [draft]);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<SanggarFormValues>({
+    resolver: zodResolver(sanggarSchema),
+    defaultValues: draft,
+    mode: "onChange",
+  });
+
+  const image = watch("image");
   const complete = isSanggarComplete(draft);
   const showGreenBanner = submitted && complete && !bannerDismissed;
-
-  const handleChange = (field: keyof SanggarDraft, value: string) => {
-    setDraft((current) => ({ ...current, [field]: value }));
-    setSaved(false);
-  };
 
   const handleImageFile = (file: File | undefined) => {
     if (!file) return;
@@ -74,23 +84,21 @@ const AdminSanggarDashboard = () => {
     setImageError("");
     const reader = new FileReader();
     reader.onload = () => {
-      handleChange("image", reader.result as string);
+      setValue("image", reader.result as string, { shouldValidate: true });
+      setSaved(false);
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
-    handleChange("image", "");
+    setValue("image", "", { shouldValidate: true });
     setImageError("");
+    setSaved(false);
   };
 
-  const handleSubmitStore = () => {
-    saveSanggarDraft(draft);
-
-    if (!complete) {
-      setSaved(true);
-      return;
-    }
+  const onSubmitStore = (data: SanggarFormValues) => {
+    saveSanggarDraft(data);
+    setDraft(data);
 
     setSubmitted(true);
     setSanggarSubmitted(true);
@@ -99,6 +107,7 @@ const AdminSanggarDashboard = () => {
   };
 
   const handleEditStore = () => {
+    reset(draft);
     setSubmitted(false);
     setSanggarSubmitted(false);
     setSaved(false);
@@ -292,7 +301,10 @@ const AdminSanggarDashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-[28px] border border-[#d6d6d6] bg-white px-8 py-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.05)]">
+          <form
+            onSubmit={handleSubmit(onSubmitStore)}
+            className="rounded-[28px] border border-[#d6d6d6] bg-white px-8 py-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.05)]"
+          >
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-[22px] font-bold text-[#3e3e3e]">
@@ -309,9 +321,10 @@ const AdminSanggarDashboard = () => {
               <label className="space-y-2">
                 <span className="text-[17px] font-bold text-[#444444]">Wilayah</span>
                 <select
-                  value={draft.regionId}
-                  onChange={(event) => handleChange("regionId", event.target.value)}
-                  className="h-[58px] w-full rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd] px-6 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00]"
+                  {...register("regionId", { onChange: () => setSaved(false) })}
+                  className={`h-[58px] w-full rounded-[22px] border bg-[#f7f8fd] px-6 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00] ${
+                    errors.regionId ? "border-red-400" : "border-[#bfc0c5]"
+                  }`}
                 >
                   <option value="">Pilih wilayah</option>
                   {regions.map((region) => (
@@ -320,20 +333,48 @@ const AdminSanggarDashboard = () => {
                     </option>
                   ))}
                 </select>
+                {errors.regionId && (
+                  <p className="text-xs font-semibold text-red-500">{errors.regionId.message}</p>
+                )}
               </label>
 
-              <Field label="Nama Sanggar" value={draft.name} placeholder="Toko Batik Kaisar Gadai" onChange={(value) => handleChange("name", value)} />
-              <Field label="Nama Pemilik" value={draft.ownerName} placeholder="Hammam" onChange={(value) => handleChange("ownerName", value)} />
-              <Field label="Nomor HP" value={draft.phone} placeholder="08xxxxxxxxxx" onChange={(value) => handleChange("phone", value)} />
-              <Field label="Latitude" value={draft.latitude} placeholder="-6.86940000" onChange={(value) => handleChange("latitude", value)} />
-              <Field label="Longitude" value={draft.longitude} placeholder="109.14020000" onChange={(value) => handleChange("longitude", value)} />
+              <Field
+                label="Nama Sanggar"
+                placeholder="Toko Batik Kaisar Gadai"
+                registration={register("name", { onChange: () => setSaved(false) })}
+                error={errors.name?.message}
+              />
+              <Field
+                label="Nama Pemilik"
+                placeholder="Hammam"
+                registration={register("ownerName", { onChange: () => setSaved(false) })}
+                error={errors.ownerName?.message}
+              />
+              <Field
+                label="Nomor HP"
+                placeholder="08xxxxxxxxxx"
+                registration={register("phone", { onChange: () => setSaved(false) })}
+                error={errors.phone?.message}
+              />
+              <Field
+                label="Latitude"
+                placeholder="-6.86940000"
+                registration={register("latitude", { onChange: () => setSaved(false) })}
+                error={errors.latitude?.message}
+              />
+              <Field
+                label="Longitude"
+                placeholder="109.14020000"
+                registration={register("longitude", { onChange: () => setSaved(false) })}
+                error={errors.longitude?.message}
+              />
 
               <div className="space-y-2 md:col-span-2">
                 <span className="text-[17px] font-bold text-[#444444]">Foto Sanggar</span>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd]">
-                    {draft.image ? (
-                      <img src={draft.image} alt="Preview toko" className="h-full w-full object-cover" />
+                    {image ? (
+                      <img src={image} alt="Preview toko" className="h-full w-full object-cover" />
                     ) : (
                       <ImagePlus size={26} className="text-[#a8a8a8]" />
                     )}
@@ -343,7 +384,7 @@ const AdminSanggarDashboard = () => {
                     <div className="flex flex-wrap gap-3">
                       <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#252525] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-black">
                         <ImagePlus size={16} />
-                        {draft.image ? "Ganti Foto" : "Upload Foto"}
+                        {image ? "Ganti Foto" : "Upload Foto"}
                         <input
                           type="file"
                           accept="image/*"
@@ -351,7 +392,7 @@ const AdminSanggarDashboard = () => {
                           onChange={(event) => handleImageFile(event.target.files?.[0])}
                         />
                       </label>
-                      {draft.image && (
+                      {image && (
                         <button
                           type="button"
                           onClick={handleRemoveImage}
@@ -375,19 +416,22 @@ const AdminSanggarDashboard = () => {
             <label className="mt-5 block space-y-2">
               <span className="text-[17px] font-bold text-[#444444]">Alamat Lengkap</span>
               <textarea
-                value={draft.address}
-                onChange={(event) => handleChange("address", event.target.value)}
+                {...register("address", { onChange: () => setSaved(false) })}
                 placeholder="Jl. Batik Tegal No. 12"
                 rows={3}
-                className="w-full resize-none rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd] px-6 py-4 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00]"
+                className={`w-full resize-none rounded-[22px] border bg-[#f7f8fd] px-6 py-4 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00] ${
+                  errors.address ? "border-red-400" : "border-[#bfc0c5]"
+                }`}
               />
+              {errors.address && (
+                <p className="text-xs font-semibold text-red-500">{errors.address.message}</p>
+              )}
             </label>
 
             <label className="mt-5 block space-y-2">
               <span className="text-[17px] font-bold text-[#444444]">Deskripsi</span>
               <textarea
-                value={draft.description}
-                onChange={(event) => handleChange("description", event.target.value)}
+                {...register("description", { onChange: () => setSaved(false) })}
                 placeholder="Ceritakan ciri khas sanggar batik anda"
                 rows={3}
                 className="w-full resize-none rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd] px-6 py-4 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00]"
@@ -396,15 +440,12 @@ const AdminSanggarDashboard = () => {
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm font-medium text-[#777777]">
-                {complete
+                {Object.keys(errors).length === 0
                   ? "Data wajib sudah lengkap. Silakan submit toko."
-                  : `${missingFields.length} data wajib belum lengkap: ${missingFields
-                      .map((field) => fieldLabels[field])
-                      .join(", ")}`}
+                  : "Cek lagi data yang masih merah di atas."}
               </div>
               <Button
-                type="button"
-                onClick={handleSubmitStore}
+                type="submit"
                 className="rounded-full bg-[#ff9800] px-7 text-white hover:bg-[#e48600]"
               >
                 <PencilLine size={17} />
@@ -412,12 +453,12 @@ const AdminSanggarDashboard = () => {
               </Button>
             </div>
 
-            {saved && !complete && (
+            {saved && (
               <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-3 text-sm font-semibold text-[#9b5a00]">
                 Data sementara tersimpan, tapi toko belum aktif karena data wajib belum lengkap.
               </div>
             )}
-          </div>
+          </form>
         )}
       </section>
     </div>
@@ -426,22 +467,23 @@ const AdminSanggarDashboard = () => {
 
 const Field = ({
   label,
-  value,
   placeholder,
-  onChange,
+  registration,
+  error,
 }: {
   label: string;
-  value: string;
   placeholder: string;
-  onChange: (value: string) => void;
+  registration: UseFormRegisterReturn;
+  error?: string;
 }) => (
   <label className="space-y-2">
     <span className="text-[17px] font-bold text-[#444444]">{label}</span>
     <input
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
+      {...registration}
       placeholder={placeholder}
-      className="h-[58px] w-full rounded-[22px] border border-[#bfc0c5] bg-[#f7f8fd] px-6 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00]"
+      className={`h-[58px] w-full rounded-[22px] border bg-[#f7f8fd] px-6 text-[17px] outline-none focus:ring-2 focus:ring-[#b6ec00] ${
+        error ? "border-red-400" : "border-[#bfc0c5]"
+      }`}
     />
   </label>
 );

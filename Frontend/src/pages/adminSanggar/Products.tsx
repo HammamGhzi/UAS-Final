@@ -8,42 +8,83 @@ import {
   getStoredSanggarDraft,
   isSanggarComplete,
 } from "./sanggarDraft";
-
-const sampleProducts = [
-  {
-    id: 1,
-    productName: "Batik Tegalan Pesisir",
-    category: "Flora",
-    price: 185000,
-    stock: 12,
-    status: "Aktif",
-  },
-  {
-    id: 2,
-    productName: "Batik Curug Klawi",
-    category: "Geometris",
-    price: 210000,
-    stock: 8,
-    status: "Draft",
-  },
-];
+import {
+  getCategoryName,
+  productToFormValues,
+  type ProductFormValues,
+  type ProductRecord,
+} from "@/pages/adminSanggar/ProductStore";
+import { useCreateProduct, useDeleteProduct, useProducts, useUpdateProduct } from "./useProducts";
+import ProductFormModal from "@/pages/adminSanggar/productFormModal";
 
 const AdminSanggarProducts = () => {
   const [query, setQuery] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null);
+
   const sanggarDraft = useMemo(() => getStoredSanggarDraft(), []);
   const complete = isSanggarComplete(sanggarDraft);
   const missingFields = getMissingSanggarFields(sanggarDraft);
 
-  const filteredProducts = sampleProducts.filter((product) =>
+  const { data: products = [], isLoading } = useProducts();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
+  const filteredProducts = products.filter((product) =>
     product.productName.toLowerCase().includes(query.toLowerCase())
   );
+
+  const totalStock = products.reduce((sum, product) => sum + product.stock, 0);
+
+  const openCreateModal = () => {
+    setEditingProduct(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (product: ProductRecord) => {
+    setEditingProduct(product);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleSubmit = (values: ProductFormValues) => {
+    if (editingProduct) {
+      updateProduct.mutate(
+        { id: editingProduct.id, values },
+        { onSuccess: closeModal }
+      );
+    } else {
+      createProduct.mutate(values, { onSuccess: closeModal });
+    }
+  };
+
+  const handleDelete = (product: ProductRecord) => {
+    const confirmed = window.confirm(
+      `Hapus produk "${product.productName}"? Tindakan ini tidak bisa dibatalkan.`
+    );
+    if (confirmed) {
+      deleteProduct.mutate(product.id);
+    }
+  };
+
+  const isSubmitting = createProduct.isPending || updateProduct.isPending;
 
   return (
     <div className="space-y-8">
       <section className="grid gap-6 lg:grid-cols-3">
-        <InfoCard title="Total Produk" value={complete ? "2" : "0"} />
-        <InfoCard title="Stok Tersedia" value={complete ? "20" : "0"} />
-        <InfoCard title="Produk Draft" value={complete ? "1" : "0"} />
+        <InfoCard title="Total Produk" value={complete ? String(products.length) : "0"} />
+        <InfoCard title="Stok Tersedia" value={complete ? String(totalStock) : "0"} />
+        <InfoCard
+          title="Kategori Terpakai"
+          value={
+            complete ? String(new Set(products.map((product) => product.categoryId)).size) : "0"
+          }
+        />
       </section>
 
       {!complete && (
@@ -82,12 +123,13 @@ const AdminSanggarProducts = () => {
           <div>
             <h1 className="text-[28px] font-extrabold text-[#2f2f2f]">Kelola Produk</h1>
             <p className="mt-1 text-sm text-[#777777]">
-              Struktur produk mengikuti model `Product`: sanggar, kategori, nama, harga, stok, deskripsi, gambar.
+              Struktur produk mengikuti model `Product`: kategori, nama, harga, stok, deskripsi, gambar.
             </p>
           </div>
           <Button
             type="button"
             disabled={!complete}
+            onClick={openCreateModal}
             className="rounded-full bg-[#ff9800] px-6 text-white hover:bg-[#e48600] disabled:cursor-not-allowed disabled:bg-[#d8d8d8]"
           >
             <Plus size={18} />
@@ -107,43 +149,66 @@ const AdminSanggarProducts = () => {
         </div>
 
         <div className="mt-7 grid gap-4">
-          {(complete ? filteredProducts : []).map((product) => (
-            <article
-              key={product.id}
-              className="grid gap-4 rounded-[24px] border border-[#e2e2e2] bg-white p-5 md:grid-cols-[64px_1fr_auto]"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
-                <PackagePlus size={28} />
-              </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-[#333333]">{product.productName}</h2>
-                <p className="mt-1 text-sm text-[#777777]">
-                  {product.category} - Rp {product.price.toLocaleString("id-ID")} - Stok {product.stock}
-                </p>
-                <span className="mt-3 inline-flex rounded-full bg-[#f0f0f0] px-3 py-1 text-xs font-bold text-[#555555]">
-                  {product.status}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5f5f5] text-[#666666] transition hover:bg-[#fff4df] hover:text-[#ff9800]"
-                  aria-label="Edit produk"
-                >
-                  <Edit3 size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5f5f5] text-[#666666] transition hover:bg-red-50 hover:text-red-500"
-                  aria-label="Hapus produk"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </article>
-          ))}
+          {complete && isLoading && (
+            <div className="rounded-[24px] border border-dashed border-[#d7d7d7] py-12 text-center text-[#777777]">
+              Memuat produk...
+            </div>
+          )}
 
-          {complete && filteredProducts.length === 0 && (
+          {complete &&
+            !isLoading &&
+            filteredProducts.map((product) => (
+              <article
+                key={product.id}
+                className="grid gap-4 rounded-[24px] border border-[#e2e2e2] bg-white p-5 md:grid-cols-[64px_1fr_auto]"
+              >
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-[#fff4df] text-[#ff9800]">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.productName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <PackagePlus size={28} />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#333333]">
+                    {product.productName}
+                  </h2>
+                  <p className="mt-1 text-sm text-[#777777]">
+                    {getCategoryName(product.categoryId)} - Rp{" "}
+                    {product.price.toLocaleString("id-ID")} - Stok {product.stock}
+                  </p>
+                  {product.description && (
+                    <p className="mt-2 line-clamp-1 text-sm text-[#999999]">
+                      {product.description}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(product)}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5f5f5] text-[#666666] transition hover:bg-[#fff4df] hover:text-[#ff9800]"
+                    aria-label="Edit produk"
+                  >
+                    <Edit3 size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(product)}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5f5f5] text-[#666666] transition hover:bg-red-50 hover:text-red-500"
+                    aria-label="Hapus produk"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </article>
+            ))}
+
+          {complete && !isLoading && filteredProducts.length === 0 && (
             <div className="rounded-[24px] border border-dashed border-[#d7d7d7] py-12 text-center text-[#777777]">
               Produk tidak ditemukan.
             </div>
@@ -156,6 +221,15 @@ const AdminSanggarProducts = () => {
           )}
         </div>
       </section>
+
+      <ProductFormModal
+        open={modalOpen}
+        mode={editingProduct ? "edit" : "create"}
+        initialValues={editingProduct ? productToFormValues(editingProduct) : undefined}
+        isSubmitting={isSubmitting}
+        onClose={closeModal}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };

@@ -18,6 +18,7 @@ import AdminMotifs from '../pages/admin/Motifs';
 import AdminReviews from '../pages/admin/Reviews';
 import AdminSanggarDashboard from '../pages/adminSanggar/Dashboard';
 import AdminSanggarProducts from '../pages/adminSanggar/Products';
+import AdminSanggarReviews from '../pages/adminSanggar/reviews';
 import AdminSanggarSettings from '../pages/adminSanggar/Settings';
 import Katalog from '../pages/Katalog/Katalog';
 
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminSanggarDashboard /> },
       { path: 'products', element: <AdminSanggarProducts /> },
+      { path: 'reviews', element: <AdminSanggarReviews /> },
       { path: 'settings', element: <AdminSanggarSettings /> },
     ],
   },

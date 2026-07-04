@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type SanggarDraft = {
   regionId: string;
   name: string;
@@ -9,6 +11,31 @@ export type SanggarDraft = {
   description: string;
   image: string;
 };
+
+const decimalPattern = /^-?\d+(\.\d+)?$/;
+
+export const sanggarSchema = z.object({
+  regionId: z.string().min(1, "Wilayah wajib dipilih."),
+  name: z.string().min(1, "Nama sanggar wajib diisi."),
+  ownerName: z.string().min(1, "Nama pemilik wajib diisi."),
+  phone: z
+    .string()
+    .min(1, "Nomor HP wajib diisi.")
+    .regex(/^[0-9+ -]+$/, "Nomor HP hanya boleh angka."),
+  latitude: z
+    .string()
+    .min(1, "Latitude wajib diisi.")
+    .regex(decimalPattern, "Latitude harus berupa angka, contoh -6.8694."),
+  longitude: z
+    .string()
+    .min(1, "Longitude wajib diisi.")
+    .regex(decimalPattern, "Longitude harus berupa angka, contoh 109.1402."),
+  address: z.string().min(1, "Alamat lengkap wajib diisi."),
+  description: z.string(),
+  image: z.string(),
+});
+
+export type SanggarFormValues = z.infer<typeof sanggarSchema>;
 
 export const emptySanggarDraft: SanggarDraft = {
   regionId: "",
