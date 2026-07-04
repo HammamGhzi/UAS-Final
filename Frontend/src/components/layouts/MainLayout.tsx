@@ -177,7 +177,7 @@ const MainLayout = () => {
                 </>
               ) : (
                 <Link
-                  to="/admin/login"
+                  to="/form/login"
                   className="flex items-center px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-[#432f27] transition-colors"
                 >
                   Masuk
