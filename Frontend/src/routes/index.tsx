@@ -18,7 +18,7 @@ import AdminMotifs from '../pages/admin/Motifs';
 import AdminReviews from '../pages/admin/Reviews';
 import AdminSanggarDashboard from '../pages/adminSanggar/Dashboard';
 import AdminSanggarProducts from '../pages/adminSanggar/Products';
-import AdminSanggarReviews from '../pages/adminSanggar/reviews';
+import AdminSanggarReviews from '../pages/adminSanggar/Reviews';
 import AdminSanggarSettings from '../pages/adminSanggar/Settings';
 import Katalog from '../pages/Katalog/Katalog';
 
