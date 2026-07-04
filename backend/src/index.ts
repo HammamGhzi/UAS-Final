@@ -2,17 +2,37 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import cors from 'cors';
+import prisma from './config/prisma';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import productRoutes from './routes/productRoutes';
+import sanggarRoutes from './routes/sanggarRoutes';
+import batikCategoryRoutes from './routes/batikCategoryRoutes';
+import reviewRoutes from './routes/reviewRoutes';
+import criteriaRoutes from './routes/criteriaRoutes';
+import recommendationRoutes from './routes/recommendationRoutes';
+import spkSessionRoutes from './routes/spkSessionRoutes';
 
-const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Hello from backend (TypeScript)' });
 });
+
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+app.use('/products', productRoutes);
+app.use('/sanggars', sanggarRoutes);
+app.use('/batik-categories', batikCategoryRoutes);
+app.use('/reviews', reviewRoutes);
+app.use('/criteria', criteriaRoutes);
+app.use('/recommendations', recommendationRoutes);
+app.use('/spk-sessions', spkSessionRoutes);
 
 const server = app.listen(PORT, () => {
   console.log(`Server berjalan di PORT : ${PORT}`);
