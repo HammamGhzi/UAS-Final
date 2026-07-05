@@ -2,11 +2,12 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { Button } from "../../components/UI/Button";
 import { Input } from "../../components/UI/Input";
 import { adminApi } from "../../services/api";
-import { useAuthStore } from "../../stores/useAuthStore";
+import { useAuthStore, type Role } from "../../stores/useAuthStore";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
@@ -31,6 +32,12 @@ const DUMMY_ADMIN_SANGGAR = {
   token: "dummy-admin-sanggar-token",
 };
 
+const DUMMY_SUPER_ADMIN = {
+  username: "superadmin@gmail.com",
+  password: "superadmin123",
+  token: "dummy-super-admin-token",
+};
+
 const DUMMY_USER = {
   username: "user@gmail.com",
   password: "user123",
@@ -38,11 +45,16 @@ const DUMMY_USER = {
   token: "dummy-user-token",
 };
 
+// Bentuk hasil login yang dipakai onSuccess untuk tau harus ngapain
+// (redirect kemana, dan login sebagai role apa).
+type LoginResult =
+  | { kind: "admin"; role: Exclude<Role, "user">; token: string; redirectTo: string }
+  | { kind: "user"; token: string; name: string; redirectTo: string };
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const loginUser = useAuthStore((state) => state.loginUser);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -57,64 +69,103 @@ const AdminLogin = () => {
     },
   });
 
-  const onSubmit = async (data: LoginForm) => {
-    setError("");
-
-    setLoading(true);
-    try {
+  // mutationFn ini yang nanti diganti kalau backend sudah nyambung:
+  // cukup hapus blok dummy di bawah lalu selalu panggil adminApi.login(data).
+  const loginMutation = useMutation<LoginResult, Error, LoginForm>({
+    mutationFn: async (data) => {
       if (
         data.username === DUMMY_ADMIN.username &&
         data.password === DUMMY_ADMIN.password
       ) {
-        login(DUMMY_ADMIN.token);
-        navigate("/admin/dashboard");
-        return;
+        return {
+          kind: "admin",
+          role: "admin",
+          token: DUMMY_ADMIN.token,
+          redirectTo: "/admin/dashboard",
+        };
       }
 
       if (
         data.username === DUMMY_ADMIN_SANGGAR.username &&
         data.password === DUMMY_ADMIN_SANGGAR.password
       ) {
-        login(DUMMY_ADMIN_SANGGAR.token);
-        navigate("/admin-sanggar");
-        return;
+        return {
+          kind: "admin",
+          role: "admin-sanggar",
+          token: DUMMY_ADMIN_SANGGAR.token,
+          redirectTo: "/admin-sanggar",
+        };
+      }
+
+      if (
+        data.username === DUMMY_SUPER_ADMIN.username &&
+        data.password === DUMMY_SUPER_ADMIN.password
+      ) {
+        return {
+          kind: "admin",
+          role: "super-admin",
+          token: DUMMY_SUPER_ADMIN.token,
+          redirectTo: "/super-admin",
+        };
       }
 
       if (
         data.username === DUMMY_USER.username &&
         data.password === DUMMY_USER.password
       ) {
-        loginUser(DUMMY_USER.token, DUMMY_USER.name);
-        navigate("/");
-        return;
+        return {
+          kind: "user",
+          token: DUMMY_USER.token,
+          name: DUMMY_USER.name,
+          redirectTo: "/",
+        };
       }
 
+      // Fallback: coba ke backend beneran (masih akan gagal selama
+      // backend belum disambungkan, dan itu tidak apa-apa untuk sekarang).
       const res = await adminApi.login(data);
       const token = res.data?.token;
-      if (token) {
-        login(token);
-        navigate("/admin/dashboard");
-      } else {
-        setError("Login gagal. Token tidak ditemukan.");
+      if (!token) {
+        throw new Error("Login gagal. Token tidak ditemukan.");
       }
-    } catch (err: unknown) {
+      return {
+        kind: "admin",
+        role: "admin",
+        token,
+        redirectTo: "/admin/dashboard",
+      };
+    },
+    onSuccess: (result) => {
+      setError("");
+      if (result.kind === "admin") {
+        login(result.token, result.role);
+      } else {
+        loginUser(result.token, result.name);
+      }
+      navigate(result.redirectTo);
+    },
+    onError: (err: unknown) => {
       const msg =
         err &&
         typeof err === "object" &&
         "response" in err &&
-        typeof err.response === "object" &&
-        err.response &&
-        "data" in err.response &&
-        typeof err.response.data === "object" &&
-        err.response.data &&
-        "message" in err.response.data &&
-        typeof err.response.data.message === "string"
-          ? err.response.data.message
+        typeof (err as any).response === "object" &&
+        (err as any).response &&
+        "data" in (err as any).response &&
+        typeof (err as any).response.data === "object" &&
+        (err as any).response.data &&
+        "message" in (err as any).response.data &&
+        typeof (err as any).response.data.message === "string"
+          ? (err as any).response.data.message
+          : err instanceof Error
+          ? err.message
           : "Username atau password salah.";
       setError(msg);
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: LoginForm) => {
+    loginMutation.mutate(data);
   };
 
   return (
@@ -170,7 +221,7 @@ const AdminLogin = () => {
                     {...register("username", {
                       onChange: () => setError(""),
                     })}
-                    disabled={loading}
+                    disabled={loginMutation.isPending}
                     error={errors.username?.message}
                     className="h-[30px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                   />
@@ -187,7 +238,7 @@ const AdminLogin = () => {
                       {...register("password", {
                         onChange: () => setError(""),
                       })}
-                      disabled={loading}
+                      disabled={loginMutation.isPending}
                       error={errors.password?.message}
                       className="h-[30px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
                     />
@@ -226,9 +277,9 @@ const AdminLogin = () => {
                   variant="primary"
                   size="lg"
                   className="mt-6 h-[30px] w-full rounded-full bg-[#b6ec00] py-0 text-xs font-bold text-white shadow-none hover:bg-[#9fd000] disabled:cursor-not-allowed disabled:opacity-70"
-                  disabled={loading}
+                  disabled={loginMutation.isPending}
                 >
-                  {loading ? "Memproses..." : "Masuk"}
+                  {loginMutation.isPending ? "Memproses..." : "Masuk"}
                 </Button>
               </form>
 

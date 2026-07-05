@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '../stores/useAuthStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -9,14 +10,33 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor untuk tambah token jika ada
+// Request interceptor: ambil token dari Zustand (bukan localStorage langsung),
+// karena Zustand adalah satu-satunya sumber kebenaran untuk auth state.
+// useAuthStore.getState() dipakai karena file ini di luar React component,
+// jadi kita tidak bisa pakai hook useAuthStore((state) => ...) biasa.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken');
+  const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Response interceptor: kalau backend nanti balas 401 (token expired/invalid),
+// otomatis bersihkan auth state dan kasih sinyal ke aplikasi bahwa user
+// harus diarahkan ke login lagi. ProtectedRoute akan otomatis redirect
+// begitu isAuthenticated berubah jadi false.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+      useAuthStore.getState().logoutUser();
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+    return Promise.reject(error);
+  }
+);
 
 // API Methods
 export const produkApi = {
@@ -50,17 +70,15 @@ export const adminApi = {
   updateSanggar: (id: string, data: any) => api.put(`/admin/sanggars/${id}`, data),
   deleteSanggar: (id: string) => api.delete(`/admin/sanggars/${id}`),
   
-  // CRUD Produk
-  getProducts: () => api.get('/admin/products'),
-  createProduct: (data: any) => api.post('/admin/products', data),
-  updateProduct: (id: string, data: any) => api.put(`/admin/products/${id}`, data),
-  deleteProduct: (id: string) => api.delete(`/admin/products/${id}`),
-  
   // Master data
   getRegions: () => api.get('/admin/regions'),
   getCategories: () => api.get('/admin/categories'),
   getMotifs: () => api.get('/admin/motifs'),
   getReviews: () => api.get('/admin/reviews'),
+  createProduct: (data: any) => api.post('/admin/products', data),
+  updateProduct: (id: string, data: any) => api.put(`/admin/products/${id}`, data),
+  deleteProduct: (id: string) => api.delete(`/admin/products/${id}`),
+  getProducts: () => api.get('/admin/products'),
 };
 
 export default api;
