@@ -18,9 +18,15 @@ import AdminMotifs from '../pages/admin/Motifs';
 import AdminReviews from '../pages/admin/Reviews';
 import AdminSanggarDashboard from '../pages/adminSanggar/Dashboard';
 import AdminSanggarProducts from '../pages/adminSanggar/Products';
-import AdminSanggarReviews from '../pages/adminSanggar/reviews';
+import AdminSanggarReviews from '../pages/adminSanggar/Reviews';
 import AdminSanggarSettings from '../pages/adminSanggar/Settings';
 import Katalog from '../pages/Katalog/Katalog';
+import SuperAdminLayout from '../components/layouts/SuperAdminLayout';
+import SuperAdminDashboard from '../pages/superAdmin/Dashboard';
+import SuperAdminSanggarPage from '../pages/superAdmin/Sanggar';
+import SuperAdminProdukPage from '../pages/superAdmin/Produk';
+import SuperAdminReviewsPage from '../pages/superAdmin/Reviews';
+import SuperAdminPenggunaPage from '../pages/superAdmin/Pengguna';
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +70,17 @@ export const router = createBrowserRouter([
       { path: 'products', element: <AdminSanggarProducts /> },
       { path: 'reviews', element: <AdminSanggarReviews /> },
       { path: 'settings', element: <AdminSanggarSettings /> },
+    ],
+  },
+  {
+    path: '/super-admin',
+    element: <SuperAdminLayout />,
+    children: [
+      { index: true, element: <SuperAdminDashboard /> },
+      { path: 'sanggar', element: <SuperAdminSanggarPage /> },
+      { path: 'produk', element: <SuperAdminProdukPage /> },
+      { path: 'reviews', element: <SuperAdminReviewsPage /> },
+      { path: 'pengguna', element: <SuperAdminPenggunaPage /> },
     ],
   },
 ]);
