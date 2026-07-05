@@ -1,6 +1,8 @@
+import { useAuthStore } from '../../stores/useAuthStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { Heart, MapPin, Share2, ShieldCheck, Star } from 'lucide-react';
+
 
 const DUMMY_PRODUCT = {
   id: '1',
@@ -78,9 +80,7 @@ const ProductDetail = () => {
   useParams();
   const navigate = useNavigate();
   const product = DUMMY_PRODUCT;
-  const isLoggedIn = Boolean(
-    localStorage.getItem('adminToken') || localStorage.getItem('userToken')
-  );
+  const isLoggedIn = useAuthStore((state) => state.isAuthenticated);
 
   const [reviews, setReviews] = useState(DUMMY_REVIEWS);
   const [selectedSize, setSelectedSize] = useState('L');
@@ -99,7 +99,7 @@ const ProductDetail = () => {
     event.preventDefault();
 
     if (!isLoggedIn) {
-      navigate('/admin/login');
+      navigate('/form/login');
       return;
     }
 

@@ -27,6 +27,7 @@ import SuperAdminSanggarPage from '../pages/superAdmin/Sanggar';
 import SuperAdminProdukPage from '../pages/superAdmin/Produk';
 import SuperAdminReviewsPage from '../pages/superAdmin/Reviews';
 import SuperAdminPenggunaPage from '../pages/superAdmin/Pengguna';
+import ProtectedRoute from './ProtectedRoute';
 
 export const router = createBrowserRouter([
   {
@@ -48,39 +49,57 @@ export const router = createBrowserRouter([
       { path: 'register', element: <AdminRegister /> },
       {
         path: '',
-        element: <AdminLayout />,
+        element: <ProtectedRoute allowedRoles={['admin']} />,
         children: [
-          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
-          { path: 'dashboard', element: <AdminDashboard /> },
-          { path: 'sanggars', element: <AdminSanggars /> },
-          { path: 'products', element: <AdminProducts /> },
-          { path: 'regions', element: <AdminRegions /> },
-          { path: 'categories', element: <AdminCategories /> },
-          { path: 'motifs', element: <AdminMotifs /> },
-          { path: 'reviews', element: <AdminReviews /> },
+          {
+            path: '',
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+              { path: 'dashboard', element: <AdminDashboard /> },
+              { path: 'sanggars', element: <AdminSanggars /> },
+              { path: 'products', element: <AdminProducts /> },
+              { path: 'regions', element: <AdminRegions /> },
+              { path: 'categories', element: <AdminCategories /> },
+              { path: 'motifs', element: <AdminMotifs /> },
+              { path: 'reviews', element: <AdminReviews /> },
+            ],
+          },
         ],
       },
     ],
   },
   {
     path: '/admin-sanggar',
-    element: <AdminSanggarLayout />,
+    element: <ProtectedRoute allowedRoles={['admin-sanggar']} />,
     children: [
-      { index: true, element: <AdminSanggarDashboard /> },
-      { path: 'products', element: <AdminSanggarProducts /> },
-      { path: 'reviews', element: <AdminSanggarReviews /> },
-      { path: 'settings', element: <AdminSanggarSettings /> },
+      {
+        path: '',
+        element: <AdminSanggarLayout />,
+        children: [
+          { index: true, element: <AdminSanggarDashboard /> },
+          { path: 'products', element: <AdminSanggarProducts /> },
+          { path: 'reviews', element: <AdminSanggarReviews /> },
+          { path: 'settings', element: <AdminSanggarSettings /> },
+        ],
+      },
     ],
   },
   {
     path: '/super-admin',
-    element: <SuperAdminLayout />,
+    element: <ProtectedRoute allowedRoles={['super-admin']} />,
     children: [
-      { index: true, element: <SuperAdminDashboard /> },
-      { path: 'sanggar', element: <SuperAdminSanggarPage /> },
-      { path: 'produk', element: <SuperAdminProdukPage /> },
-      { path: 'reviews', element: <SuperAdminReviewsPage /> },
-      { path: 'pengguna', element: <SuperAdminPenggunaPage /> },
+      {
+        path: '',
+        element: <SuperAdminLayout />,
+        children: [
+          { index: true, element: <SuperAdminDashboard /> },
+          { path: 'sanggar', element: <SuperAdminSanggarPage /> },
+          { path: 'produk', element: <SuperAdminProdukPage /> },
+          { path: 'reviews', element: <SuperAdminReviewsPage /> },
+          { path: 'pengguna', element: <SuperAdminPenggunaPage /> },
+        ],
+      },
     ],
   },
 ]);
