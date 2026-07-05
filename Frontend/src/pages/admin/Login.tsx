@@ -20,6 +20,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+// ini data dummy yang dipakai untuk login sementara, sebelum backend nyambung.
 const DUMMY_ADMIN = {
   username: "admin@gmail.com",
   password: "admin123",

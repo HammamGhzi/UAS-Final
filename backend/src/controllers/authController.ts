@@ -59,6 +59,6 @@ export async function login(req: Request, res: Response) {
 
     return success(res, { token, user: { id: user.id, email: user.email, role: user.role } }, 'Login successful');
   } catch (err) {
-    return error(res, (err as Error).message || 'Login failed', 500);
+    return error(res, (err as Error).message || 'Login gagal', 500);
   }
 }
