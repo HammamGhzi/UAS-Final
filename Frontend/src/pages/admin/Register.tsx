@@ -219,7 +219,7 @@ const AdminRegister = () => {
                 Sudah punya akun?{" "}
                 <button
                   type="button"
-                  onClick={() => navigate("//login")}
+                  onClick={() => navigate("/form/login")}
                   className="font-bold text-[#6aa300] transition hover:text-[#4d7a00]"
                 >
                   Masuk Disini
