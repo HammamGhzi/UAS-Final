@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 
-export async function createSpkSession(data: {
+// Buat sesi SPK baru
+export const createSpkSession = async (data: {
   sessionId: string;
   userId: number;
   regionId?: number | null;
@@ -10,12 +11,13 @@ export async function createSpkSession(data: {
   userLat: number;
   userLon: number;
   weightHistoryId: number;
-}) {
+}) => {
   return prisma.spkSession.create({ data });
-}
+};
 
-export async function getSpkSession(sessionId: string) {
+// Ambil sesi SPK berdasarkan session id
+export const getSpkSession = async (sessionId: string) => {
   return prisma.spkSession.findUnique({ where: { sessionId } });
-}
+};
 
 export default { createSpkSession, getSpkSession };
