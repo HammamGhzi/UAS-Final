@@ -89,5 +89,12 @@ export const batikCategoryApi = {
     api.put(`/batik-categories/${id}`, data),
   delete: (id: number) => api.delete(`/batik-categories/${id}`),
 };
-
+// Auth API — konek ke authController.ts backend
+export const authApi = {
+  login: (data: { email: string; password: string }) =>
+    api.post('/auth/login', data),
+  register: (data: { email: string; password: string; role?: string }) =>
+    api.post('/auth/register', data),
+  me: () => api.get('/auth/me'),
+};
 export default api;

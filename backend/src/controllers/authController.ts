@@ -63,5 +63,10 @@ export const login = async (req: Request, res: Response) => {
   } catch (err) {
     return error(res, (err as Error).message || 'Login gagal', 500);
   }
+  
 };
-
+// Ambil profil user yang sedang login berdasarkan token
+export const me = async (req: Request, res: Response) => {
+  const user = (req as any).user; // ini di-set oleh authMiddleware
+  return success(res, user, 'Profil user');
+};
