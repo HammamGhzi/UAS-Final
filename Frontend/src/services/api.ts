@@ -44,6 +44,14 @@ export const authApi = {
     api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
 };
+// CRUD User — untuk Super Admin kelola akun ADMIN & USER
+export const userApi = {
+  getAll: () => api.get('/users'),
+  getById: (id: number) => api.get(`/users/${id}`),
+  update: (id: number, data: { email?: string; password?: string; role?: string }) =>
+    api.put(`/users/${id}`, data),
+  delete: (id: number) => api.delete(`/users/${id}`),
+};
 
 // CRUD Batik Category — konek ke batikCategoryController.ts backend
 export const batikCategoryApi = {
