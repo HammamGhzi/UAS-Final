@@ -80,5 +80,14 @@ export const adminApi = {
   deleteProduct: (id: string) => api.delete(`/admin/products/${id}`),
   getProducts: () => api.get('/admin/products'),
 };
+// CRUD Batik Category — konek langsung ke backend batikCategoryController.ts
+export const batikCategoryApi = {
+  getAll: () => api.get('/batik-categories'),
+  getById: (id: number) => api.get(`/batik-categories/${id}`),
+  create: (data: { categoryName: string }) => api.post('/batik-categories', data),
+  update: (id: number, data: { categoryName: string }) =>
+    api.put(`/batik-categories/${id}`, data),
+  delete: (id: number) => api.delete(`/batik-categories/${id}`),
+};
 
 export default api;
