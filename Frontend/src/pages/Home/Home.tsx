@@ -14,7 +14,7 @@ const Home = () => {
 
 const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
 
-  const topSanggar = [
+  const allSanggar = [
     {
       id: "1",
       nama: "Rumah Batik Tegalan Maudy",
@@ -76,6 +76,11 @@ const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
       jumlahProduk: 41,
     },
   ];
+
+  // Nanti diganti hasil query backend: sort by rating desc, limit 5
+  const topSanggar = [...allSanggar]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,13 +228,6 @@ const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
             transition={{ delay: 0.35, duration: 0.4 }}
             className="text-center mt-12 sm:mt-14 px-4"
           >
-            <button
-              type="button"
-              onClick={() => navigate("/katalog")}
-              className="text-sm font-medium text-brown-800 hover:text-brown-900 transition-colors"
-            >
-              Lihat Semua
-            </button>
           </motion.div>
         </div>
       </section>

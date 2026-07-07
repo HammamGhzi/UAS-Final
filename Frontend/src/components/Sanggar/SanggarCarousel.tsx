@@ -29,13 +29,13 @@ export const SanggarCarousel = ({ items }: SanggarCarouselProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const dragState = useRef({ startX: 0, scrollLeft: 0, moved: false });
 
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setIsDragging(true);
-    dragState.current = { startX: e.clientX, scrollLeft: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
-  }, []);
+const onPointerDown = useCallback((e: React.PointerEvent) => {
+  const el = scrollRef.current;
+  if (!el) return;
+  setIsDragging(true);
+  dragState.current = { startX: e.clientX, scrollLeft: el.scrollLeft, moved: false };
+  el.setPointerCapture(e.pointerId);
+}, []);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging || !scrollRef.current) return;
@@ -50,52 +50,39 @@ export const SanggarCarousel = ({ items }: SanggarCarouselProps) => {
   }, []);
 
   const onClickCapture = useCallback((e: React.MouseEvent) => {
-    if (dragState.current.moved) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }, []);
-
-  const featured = items.slice(0, 3);
+  if (dragState.current.moved && isDragging) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  dragState.current.moved = false;
+}, [isDragging]);
 
   return (
-    <>
-      {/* Desktop — 3 card grid persis Figma */}
-      <div className="hidden md:grid md:grid-cols-3 md:gap-5 md:max-w-[1100px] md:mx-auto md:px-8">
-        {featured.map((sanggar, index) => (
-          <motion.div key={sanggar.id} {...cardMotion(index)}>
-            <SanggarCard {...sanggar} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Mobile — scroll horizontal */}
-      <div className="md:hidden">
-        <div
-          ref={scrollRef}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
-          onClickCapture={onClickCapture}
-          className={`overflow-x-auto pb-2 snap-x snap-proximity scroll-smooth scrollbar-hide touch-pan-x ${
-            isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab'
-          }`}
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="flex gap-6 px-6">
-            {featured.map((sanggar, index) => (
-              <motion.div
-                key={sanggar.id}
-                {...cardMotion(index)}
-                className="snap-center shrink-0 w-[78vw] max-w-[300px]"
-              >
-                <SanggarCard {...sanggar} />
-              </motion.div>
-            ))}
-          </div>
+    <div className="md:max-w-[1100px] md:mx-auto md:px-8">
+      <div
+        ref={scrollRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        onClickCapture={onClickCapture}
+        className={`overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth scrollbar-hide touch-pan-x ${
+          isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab'
+        }`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        <div className="flex gap-6 px-6 md:px-0 md:gap-5">
+          {items.map((sanggar, index) => (
+            <motion.div
+              key={sanggar.id}
+              {...cardMotion(index)}
+              className="snap-start shrink-0 w-[78vw] max-w-[300px] md:w-[calc((100%-2.5rem)/3)] md:max-w-none"
+            >
+              <SanggarCard {...sanggar} />
+            </motion.div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
