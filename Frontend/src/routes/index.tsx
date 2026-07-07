@@ -28,19 +28,21 @@ import SuperAdminProdukPage from '../pages/superAdmin/Produk';
 import SuperAdminReviewsPage from '../pages/superAdmin/Reviews';
 import SuperAdminPenggunaPage from '../pages/superAdmin/Pengguna';
 import ProtectedRoute from './ProtectedRoute';
+import ProdukList from '../pages/ProdukList/ProdukList';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: 'produk/:id', element: <ProductDetail /> },
-      { path: 'sanggar/:id', element: <SanggarDetail /> },
-      { path: 'rekomendasi', element: <Recommendation /> },
-      { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
-      { path: 'katalog', element: <Katalog /> },
-    ],
+   children: [
+  { index: true, element: <Home /> },
+  { path: 'produk', element: <ProdukList /> },
+  { path: 'produk/:id', element: <ProductDetail /> },
+  { path: 'sanggar/:id', element: <SanggarDetail /> },
+  { path: 'rekomendasi', element: <Recommendation /> },
+  { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
+  { path: 'katalog', element: <Katalog /> },
+],
   },
   {
     path: '/form',
