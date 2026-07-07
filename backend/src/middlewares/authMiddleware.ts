@@ -23,11 +23,16 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email?: string; role?: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id?: number; userId?: number; email?: string; role?: string };
+    const userId = decoded.id ?? decoded.userId;
+
+    if (!userId) {
+      return error(res, 'Token tidak valid', 401);
+    }
 
     // Ambil data user dari database berdasarkan id dari token
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: userId },
       select: { id: true, email: true, role: true },
     });
 
@@ -62,4 +67,13 @@ export const authorizeRoles = (allowedRoles: string[]) => {
 
     next();
   };
+};
+
+// Alias agar kompatibel dengan import authMiddleware di route lain
+export const authMiddleware = authenticate;
+
+export default {
+  authenticate,
+  authMiddleware,
+  authorizeRoles,
 };
