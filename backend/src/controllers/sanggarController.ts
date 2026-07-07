@@ -2,16 +2,18 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { success, error } from '../utils/response';
 
-export async function getAllSanggars(req: Request, res: Response) {
+// Ambil semua data sanggar beserta region dan produk
+export const getAllSanggars = async (req: Request, res: Response) => {
   try {
     const sanggars = await prisma.sanggar.findMany({ include: { region: true, products: true } });
     return success(res, sanggars);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get sanggars');
   }
-}
+};
 
-export async function getSanggarById(req: Request, res: Response) {
+// Ambil satu sanggar berdasarkan id
+export const getSanggarById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const sanggar = await prisma.sanggar.findUnique({
@@ -27,9 +29,10 @@ export async function getSanggarById(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get sanggar');
   }
-}
+};
 
-export async function createSanggar(req: Request, res: Response) {
+// Buat sanggar baru
+export const createSanggar = async (req: Request, res: Response) => {
   try {
     const { regionId, adminId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
 
@@ -52,9 +55,10 @@ export async function createSanggar(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to create sanggar');
   }
-}
+};
 
-export async function updateSanggar(req: Request, res: Response) {
+// Perbarui data sanggar yang sudah ada
+export const updateSanggar = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { regionId, adminId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
@@ -79,9 +83,10 @@ export async function updateSanggar(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to update sanggar');
   }
-}
+};
 
-export async function deleteSanggar(req: Request, res: Response) {
+// Hapus sanggar berdasarkan id
+export const deleteSanggar = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     await prisma.sanggar.delete({ where: { id } });
@@ -89,4 +94,4 @@ export async function deleteSanggar(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to delete sanggar');
   }
-}
+};

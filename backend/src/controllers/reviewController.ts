@@ -2,29 +2,34 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { success, error } from '../utils/response';
 
-export async function getAllReviews(req: Request, res: Response) {
+// Ambil semua ulasan
+export const getAllReviews = async (req: Request, res: Response) => {
   try {
     const reviews = await prisma.review.findMany({ include: { product: true, user: true } });
     return success(res, reviews);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get reviews');
   }
-}
+};
 
-export async function getReviewById(req: Request, res: Response) {
+// Ambil satu ulasan berdasarkan id
+export const getReviewById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const review = await prisma.review.findUnique({ where: { id }, include: { product: true, user: true } });
+
     if (!review) {
       return error(res, 'Review not found', 404);
     }
+
     return success(res, review);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get review');
   }
-}
+};
 
-export async function createReview(req: Request, res: Response) {
+// Buat ulasan baru
+export const createReview = async (req: Request, res: Response) => {
   try {
     const { productId, userId, reviewerName, quality, popularity, design, comment } = req.body;
     const review = await prisma.review.create({
@@ -38,13 +43,15 @@ export async function createReview(req: Request, res: Response) {
         comment,
       },
     });
+
     return success(res, review, 'Review created', 201);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to create review');
   }
-}
+};
 
-export async function updateReview(req: Request, res: Response) {
+// Perbarui ulasan yang sudah ada
+export const updateReview = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { productId, userId, reviewerName, quality, popularity, design, comment } = req.body;
@@ -60,13 +67,15 @@ export async function updateReview(req: Request, res: Response) {
         comment,
       },
     });
+
     return success(res, review, 'Review updated');
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to update review');
   }
-}
+};
 
-export async function deleteReview(req: Request, res: Response) {
+// Hapus ulasan berdasarkan id
+export const deleteReview = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     await prisma.review.delete({ where: { id } });
@@ -74,4 +83,4 @@ export async function deleteReview(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to delete review');
   }
-}
+};

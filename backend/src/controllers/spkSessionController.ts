@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import * as spkSessionService from '../services/spkSessionService';
 import { success, error } from '../utils/response';
 
-export async function createSession(req: Request, res: Response) {
+// Buat sesi SPK baru
+export const createSession = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     const session = await spkSessionService.createSpkSession(data);
@@ -10,17 +11,22 @@ export async function createSession(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to create session');
   }
-}
+};
 
-export async function getSession(req: Request, res: Response) {
+// Ambil data sesi berdasarkan session id
+export const getSession = async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId;
     const session = await spkSessionService.getSpkSession(sessionId);
-    if (!session) return error(res, 'Session not found', 404);
+
+    if (!session) {
+      return error(res, 'Session not found', 404);
+    }
+
     return success(res, session);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get session');
   }
-}
+};
 
 export default { createSession, getSession };

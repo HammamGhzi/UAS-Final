@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { success, error } from '../utils/response';
 
-export async function getAllProducts(req: Request, res: Response) {
+// Ambil semua data produk beserta relasinya
+export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const products = await prisma.product.findMany({
       include: {
@@ -11,13 +12,15 @@ export async function getAllProducts(req: Request, res: Response) {
         reviews: true,
       },
     });
+
     return success(res, products);
   } catch (err) {
-    return error(res, (err as Error).message || 'Failed to get products');
+    return error(res, (err as Error).message || 'Gagal mendapatkan produk');
   }
-}
+};
 
-export async function getProductById(req: Request, res: Response) {
+// Ambil satu produk berdasarkan id
+export const getProductById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const product = await prisma.product.findUnique({
@@ -26,16 +29,17 @@ export async function getProductById(req: Request, res: Response) {
     });
 
     if (!product) {
-      return error(res, 'Product not found', 404);
+      return error(res, 'Produk tidak ditemukan', 404);
     }
 
     return success(res, product);
   } catch (err) {
-    return error(res, (err as Error).message || 'Failed to get product');
+    return error(res, (err as Error).message || 'Gagal mendapatkan produk');
   }
-}
+};
 
-export async function createProduct(req: Request, res: Response) {
+// Buat produk baru
+export const createProduct = async (req: Request, res: Response) => {
   try {
     const { sanggarId, categoryId, productName, price, stock, description, image } = req.body;
 
@@ -51,13 +55,14 @@ export async function createProduct(req: Request, res: Response) {
       },
     });
 
-    return success(res, product, 'Product created', 201);
+    return success(res, product, 'Produk dibuat', 201);
   } catch (err) {
-    return error(res, (err as Error).message || 'Failed to create product');
+    return error(res, (err as Error).message || 'Gagal membuat produk');
   }
-}
+};
 
-export async function updateProduct(req: Request, res: Response) {
+// Perbarui data produk yang sudah ada
+export const updateProduct = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { sanggarId, categoryId, productName, price, stock, description, image } = req.body;
@@ -75,18 +80,19 @@ export async function updateProduct(req: Request, res: Response) {
       },
     });
 
-    return success(res, product, 'Product updated');
+    return success(res, product, 'Produk diperbarui');
   } catch (err) {
-    return error(res, (err as Error).message || 'Failed to update product');
+    return error(res, (err as Error).message || 'Gagal memperbarui produk');
   }
-}
+};
 
-export async function deleteProduct(req: Request, res: Response) {
+// Hapus produk berdasarkan id
+export const deleteProduct = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     await prisma.product.delete({ where: { id } });
-    return success(res, null, 'Product deleted');
+    return success(res, null, 'Produk berhasil dihapus');
   } catch (err) {
-    return error(res, (err as Error).message || 'Failed to delete product');
+    return error(res, (err as Error).message || 'Gagal menghapus produk');
   }
-}
+};
