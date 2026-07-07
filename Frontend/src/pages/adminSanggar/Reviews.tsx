@@ -16,7 +16,7 @@ import {
   getStoredSanggarDraft,
   isSanggarComplete,
 } from "./sanggarDraft";
-import { getCategoryName } from "@/pages/adminSanggar/ProductStore";
+import { getCategoryName } from "@/pages/adminSanggar/productStore";
 import { useProducts } from "./useProducts";
 import { getAverageRating, getProductAverageRating } from "./reviewStore";
 import { useClearReviews, useReviews, useSeedSampleReviews } from "./useReviews";

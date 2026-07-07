@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clearAllReviews, getStoredReviews, seedSampleReviews } from "./reviewStore";
-import type { ProductRecord } from "@/pages/adminSanggar/ProductStore";
+import type { ProductRecord } from "@/pages/adminSanggar/productStore";
 
 export const REVIEWS_QUERY_KEY = ["admin-sanggar-reviews"] as const;
 

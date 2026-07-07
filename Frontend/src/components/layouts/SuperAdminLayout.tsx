@@ -1,15 +1,16 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, LogOut, MapPin, Menu, Package, ShieldCheck, Star, Users } from "lucide-react";
+import { LayoutGrid, LogOut, MapPin, Menu, Package, ShieldCheck, Star, Tag, Users } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
+
 
 const sidebarItems = [
   { to: "/super-admin", icon: LayoutGrid, label: "Dashboard" },
   { to: "/super-admin/sanggar", icon: MapPin, label: "Sanggar" },
   { to: "/super-admin/produk", icon: Package, label: "Produk" },
+  { to: "/super-admin/kategori", icon: Tag, label: "Kategori Batik" },
   { to: "/super-admin/reviews", icon: Star, label: "Reviews" },
   { to: "/super-admin/pengguna", icon: Users, label: "Pengguna" },
 ];
-
 const SuperAdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
