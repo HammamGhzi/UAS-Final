@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore, type Role } from '../stores/useAuthStore';
+import { useAuthStore } from '../stores/useAuthStore';
+import type { Role } from '../types/auth';
 
 type ProtectedRouteProps = {
   allowedRoles: Role[];

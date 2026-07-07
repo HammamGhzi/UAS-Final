@@ -10,7 +10,7 @@ const MainLayout = () => {
   const [activeSection, setActiveSection] = useState('beranda');
   const location = useLocation();
   const navigate = useNavigate();
-  const { isUser, userName, logoutUser } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const isHome = location.pathname === '/';
   const isProductDetail = location.pathname.startsWith('/produk/');
 
@@ -64,7 +64,7 @@ const MainLayout = () => {
   };
 
   const handleUserLogout = () => {
-    logoutUser();
+    logout();
     setIsMenuOpen(false);
     setIsUserMenuOpen(false);
     navigate('/');
@@ -142,7 +142,7 @@ const MainLayout = () => {
             </div>
 
             <div className="relative z-10 hidden md:block">
-              {isUser ? (
+              {isAuthenticated ? (
                 <>
                   <button
                     type="button"
@@ -161,7 +161,7 @@ const MainLayout = () => {
                         className="absolute right-0 top-12 w-44 overflow-hidden rounded-xl border border-cream-200 bg-white shadow-lg"
                       >
                         <div className="border-b border-cream-200 px-4 py-3 text-sm font-medium text-brown-900">
-                          {userName || 'User'}
+                          {user?.email || 'User'}
                         </div>
                         <button
                           type="button"
@@ -253,7 +253,7 @@ const MainLayout = () => {
                 >
                   Tentang
                 </button>
-                {isUser ? (
+                {isAuthenticated ? (
                   <button
                     type="button"
                     onClick={handleUserLogout}
@@ -264,7 +264,7 @@ const MainLayout = () => {
                   </button>
                 ) : (
                   <Link
-                    to="/admin/login"
+                    to="/form/login"
                     onClick={() => setIsMenuOpen(false)}
                     className="block px-3 py-2 text-brown-800 font-medium"
                   >

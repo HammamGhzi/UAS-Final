@@ -35,15 +35,15 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
-   children: [
-  { index: true, element: <Home /> },
-  { path: 'produk', element: <ProdukList /> },
-  { path: 'produk/:id', element: <ProductDetail /> },
-  { path: 'sanggar/:id', element: <SanggarDetail /> },
-  { path: 'rekomendasi', element: <Recommendation /> },
-  { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
-  { path: 'katalog', element: <Katalog /> },
-],
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'produk', element: <ProdukList /> },
+      { path: 'produk/:id', element: <ProductDetail /> },
+      { path: 'sanggar/:id', element: <SanggarDetail /> },
+      { path: 'rekomendasi', element: <Recommendation /> },
+      { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
+      { path: 'katalog', element: <Katalog /> },
+    ],
   },
   {
     path: '/form',
@@ -52,13 +52,13 @@ export const router = createBrowserRouter([
       { path: 'register', element: <AdminRegister /> },
       {
         path: '',
-        element: <ProtectedRoute allowedRoles={['admin']} />,
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
         children: [
           {
             path: '',
             element: <AdminLayout />,
             children: [
-              { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+              { index: true, element: <Navigate to="/form/dashboard" replace /> },
               { path: 'dashboard', element: <AdminDashboard /> },
               { path: 'sanggars', element: <AdminSanggars /> },
               { path: 'products', element: <AdminProducts /> },
@@ -74,7 +74,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin-sanggar',
-    element: <ProtectedRoute allowedRoles={['admin-sanggar']} />,
+    element: <ProtectedRoute allowedRoles={['ADMIN']} />,
     children: [
       {
         path: '',
@@ -90,7 +90,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/super-admin',
-    element: <ProtectedRoute allowedRoles={['super-admin']} />,
+    element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
     children: [
       {
         path: '',

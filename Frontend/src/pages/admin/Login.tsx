@@ -6,9 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { Button } from "../../components/UI/Button";
 import { Input } from "../../components/UI/Input";
-import { adminApi } from "../../services/api";
-import { useAuthStore, type Role } from "../../stores/useAuthStore";
+import { authApi } from "../../services/api";
+import { useAuthStore } from "../../stores/useAuthStore";
+import type { LoginResponse } from "../../types/auth";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import type { AxiosError } from "axios";
 
 const loginSchema = z.object({
   username: z
@@ -20,82 +22,55 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-  
-// ini data dummy yang dipakai untuk login sementara, sebelum backend nyambung.
-
-// ini data dummy yang dipakai untuk login sementara, sebelum backend nyambung.
-const DUMMY_ADMIN = {
-  username: "admin@gmail.com",
-  password: "admin123",
-  token: "dummy-admin-token",
-};
-
-const DUMMY_ADMIN_SANGGAR = {
-  username: "sanggar@gmail.com",
-  password: "sanggar123",
-  token: "dummy-admin-sanggar-token",
-};
-
-const DUMMY_SUPER_ADMIN = {
-  username: "superadmin@gmail.com",
-  password: "superadmin123",
-  token: "dummy-super-admin-token",
-};
-
-const DUMMY_USER = {
-  username: "user@gmail.com",
-  password: "user123",
-  name: "User",
-  token: "dummy-user-token",
-};
-
-// Bentuk hasil login yang dipakai onSuccess untuk tau harus ngapain
-// (redirect kemana, dan login sebagai role apa).
-type LoginResult =
-  | { kind: "admin"; role: Exclude<Role, "user">; token: string; redirectTo: string }
-  | { kind: "user"; token: string; name: string; redirectTo: string };
+type ErrorResponse = { message?: string };
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
-  const loginUser = useAuthStore((state) => state.loginUser);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: DUMMY_ADMIN.username,
-      password: DUMMY_ADMIN.password,
-    },
   });
 
-  // mutationFn ini yang nanti diganti kalau backend sudah nyambung:
-  // cukup hapus blok dummy di bawah lalu selalu panggil adminApi.login(data).
   const loginMutation = useMutation({
-  mutationFn: async (data: LoginForm) => {
-    const res = await authApi.login({
-      email: data.username,
-      password: data.password,
-    });
-    return res.data.data; // { token, user: { id, email, role } }
-  },
-  onSuccess: (result) => {
-    setError("");
-    login(result.token, result.user);
+    mutationFn: async (data: LoginForm) => {
+      const res = await authApi.login({
+        email: data.username,
+        password: data.password,
+      });
+      return res.data.data as LoginResponse; // { token, user: { id, email, role } }
+    },
+    onSuccess: (result) => {
+      setError("");
+      login({ user: result.user, token: result.token });
 
-    if (result.user.role === "SUPER_ADMIN") navigate("/super-admin");
-    else if (result.user.role === "ADMIN") navigate("/admin/dashboard");
-    else navigate("/");
-  },
-  onError: (err: any) => {
-    const msg = err?.response?.data?.message || "Email atau password salah.";
-    setError(msg);
-  },
-});
+      switch (result.user.role) {
+        case "SUPER_ADMIN":
+          navigate("/super-admin");
+          break;
+        case "ADMIN":
+          navigate("/admin-sanggar");
+          break;
+        case "USER":
+        default:
+          navigate("/");
+          break;
+      }
+    },
+    onError: (err: AxiosError<ErrorResponse>) => {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Email atau password salah.";
+      setError(msg);
+    },
+  });
 
   const onSubmit = (data: LoginForm) => {
     loginMutation.mutate(data);
