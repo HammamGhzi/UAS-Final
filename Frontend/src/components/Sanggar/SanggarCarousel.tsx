@@ -29,13 +29,21 @@ export const SanggarCarousel = ({ items }: SanggarCarouselProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const dragState = useRef({ startX: 0, scrollLeft: 0, moved: false });
 
-const onPointerDown = useCallback((e: React.PointerEvent) => {
-  const el = scrollRef.current;
-  if (!el) return;
-  setIsDragging(true);
-  dragState.current = { startX: e.clientX, scrollLeft: el.scrollLeft, moved: false };
-  el.setPointerCapture(e.pointerId);
-}, []);
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Kalau pointer down-nya di atas link/tombol (misal "Lihat Selengkapnya"),
+    // JANGAN mulai drag sama sekali — biar klik/navigasinya jalan normal.
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button')) {
+      return;
+    }
+
+    setIsDragging(true);
+    dragState.current = { startX: e.clientX, scrollLeft: el.scrollLeft, moved: false };
+    el.setPointerCapture(e.pointerId);
+  }, []);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging || !scrollRef.current) return;
@@ -46,16 +54,18 @@ const onPointerDown = useCallback((e: React.PointerEvent) => {
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     setIsDragging(false);
-    scrollRef.current?.releasePointerCapture(e.pointerId);
+    if (scrollRef.current?.hasPointerCapture(e.pointerId)) {
+      scrollRef.current.releasePointerCapture(e.pointerId);
+    }
   }, []);
 
   const onClickCapture = useCallback((e: React.MouseEvent) => {
-  if (dragState.current.moved && isDragging) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  dragState.current.moved = false;
-}, [isDragging]);
+    if (dragState.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    dragState.current.moved = false;
+  }, []);
 
   return (
     <div className="md:max-w-[1100px] md:mx-auto md:px-8">
