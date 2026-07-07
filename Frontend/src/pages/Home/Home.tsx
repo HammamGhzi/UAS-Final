@@ -4,20 +4,15 @@ import { Search, MapPin, MousePointer2, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { BatikPattern } from "../../assets/BatikPattern";
 import { SanggarCarousel } from "../../components/Sanggar/SanggarCarousel";
+import { ProductCardHome } from "../../components/Product/ProductCardHome";
+import { DUMMY_PRODUCTS } from "../../data/dummyProducts";
 
 const Home = () => {
   const navigate = useNavigate();
   const [wilayah, setWilayah] = useState("");
   const [jenisBatik, setJenisBatik] = useState("");
 
-  const categories = [
-    { name: "Flora", produk: 12, image: "/category-flora.jpg" },
-    { name: "Fauna", produk: 7, image: "/category-fauna.jpg" },
-    { name: "Geometris", produk: 19, image: "/category-geometris.jpg" },
-    { name: "Benda", produk: 6, image: "/category-benda.jpg" },
-    { name: "Pesisir", produk: 15, image: "/category-pesisir.jpg" },
-    { name: "Kontemporer", produk: 9, image: "/category-kontemporer.jpg" },
-  ];
+const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
 
   const topSanggar = [
     {
@@ -311,41 +306,40 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
-              Temukan batik yang kamu suka
-            </h2>
-          </div>
+    {/* Products Section */}
+<section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
+  <div className="max-w-6xl mx-auto">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
+        Temukan batik yang kamu suka
+      </h2>
+      <p className="text-brown-600 text-sm">
+        Produk batik pilihan dari sanggar-sanggar terpercaya di Tegal
+      </p>
+    </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            {categories.map((cat) => (
-              <motion.div
-                key={cat.name}
-                whileHover={{ scale: 1.03 }}
-                className="cursor-pointer"
-                onClick={() =>
-                  navigate(`/katalog?kategori=${cat.name.toLowerCase()}`)
-                }
-              >
-                <div className="aspect-video rounded-2xl overflow-hidden bg-brown-800 relative">
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover opacity-80"
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-4">
-                    <h3 className="font-bold text-white text-lg">{cat.name}</h3>
-                    <p className="text-white/80 text-sm">{cat.produk} Produk</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-5">
+      {featuredProducts.map((produk) => (
+        <motion.div
+          key={produk.id}
+          whileHover={{ scale: 1.02 }}
+        >
+          <ProductCardHome produk={produk} />
+        </motion.div>
+      ))}
+    </div>
+
+    <div className="text-center mt-12">
+      <button
+        type="button"
+        onClick={() => navigate("/produk")}
+        className="px-8 py-3 bg-[#432f27] text-white rounded-2xl text-sm font-semibold hover:bg-black transition-colors"
+      >
+        Lihat Semua Produk
+      </button>
+    </div>
+  </div>
+</section>
 
       {/* Tentang Section */}
       <section id="tentang-section" className="py-20 px-4 bg-[#f5ead8]">
