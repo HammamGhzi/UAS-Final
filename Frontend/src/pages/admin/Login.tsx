@@ -75,98 +75,27 @@ const AdminLogin = () => {
 
   // mutationFn ini yang nanti diganti kalau backend sudah nyambung:
   // cukup hapus blok dummy di bawah lalu selalu panggil adminApi.login(data).
-  const loginMutation = useMutation<LoginResult, Error, LoginForm>({
-    mutationFn: async (data) => {
-      if (
-        data.username === DUMMY_ADMIN.username &&
-        data.password === DUMMY_ADMIN.password
-      ) {
-        return {
-          kind: "admin",
-          role: "admin",
-          token: DUMMY_ADMIN.token,
-          redirectTo: "/admin/dashboard",
-        };
-      }
+  const loginMutation = useMutation({
+  mutationFn: async (data: LoginForm) => {
+    const res = await authApi.login({
+      email: data.username,
+      password: data.password,
+    });
+    return res.data.data; // { token, user: { id, email, role } }
+  },
+  onSuccess: (result) => {
+    setError("");
+    login(result.token, result.user);
 
-      if (
-        data.username === DUMMY_ADMIN_SANGGAR.username &&
-        data.password === DUMMY_ADMIN_SANGGAR.password
-      ) {
-        return {
-          kind: "admin",
-          role: "admin-sanggar",
-          token: DUMMY_ADMIN_SANGGAR.token,
-          redirectTo: "/admin-sanggar",
-        };
-      }
-
-      if (
-        data.username === DUMMY_SUPER_ADMIN.username &&
-        data.password === DUMMY_SUPER_ADMIN.password
-      ) {
-        return {
-          kind: "admin",
-          role: "super-admin",
-          token: DUMMY_SUPER_ADMIN.token,
-          redirectTo: "/super-admin",
-        };
-      }
-
-      if (
-        data.username === DUMMY_USER.username &&
-        data.password === DUMMY_USER.password
-      ) {
-        return {
-          kind: "user",
-          token: DUMMY_USER.token,
-          name: DUMMY_USER.name,
-          redirectTo: "/",
-        };
-      }
-
-      // Fallback: coba ke backend beneran (masih akan gagal selama
-      // backend belum disambungkan, dan itu tidak apa-apa untuk sekarang).
-      const res = await adminApi.login(data);
-      const token = res.data?.token;
-      if (!token) {
-        throw new Error("Login gagal. Token tidak ditemukan.");
-      }
-      return {
-        kind: "admin",
-        role: "admin",
-        token,
-        redirectTo: "/admin/dashboard",
-      };
-    },
-    onSuccess: (result) => {
-      setError("");
-      if (result.kind === "admin") {
-        login(result.token, result.role);
-      } else {
-        loginUser(result.token, result.name);
-      }
-      navigate(result.redirectTo);
-    },
-    onError: (err: unknown) => {
-      const msg =
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        typeof (err as any).response === "object" &&
-        (err as any).response &&
-        "data" in (err as any).response &&
-        typeof (err as any).response.data === "object" &&
-        (err as any).response.data &&
-        "message" in (err as any).response.data &&
-        typeof (err as any).response.data.message === "string"
-          ? (err as any).response.data.message
-          : err instanceof Error
-          ? err.message
-          : "Username atau password salah.";
-      setError(msg);
-    },
-  });
+    if (result.user.role === "SUPER_ADMIN") navigate("/super-admin");
+    else if (result.user.role === "ADMIN") navigate("/admin/dashboard");
+    else navigate("/");
+  },
+  onError: (err: any) => {
+    const msg = err?.response?.data?.message || "Email atau password salah.";
+    setError(msg);
+  },
+});
 
   const onSubmit = (data: LoginForm) => {
     loginMutation.mutate(data);

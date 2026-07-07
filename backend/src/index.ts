@@ -24,16 +24,15 @@ app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Hello from backend (TypeScript)' });
 });
 
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/products', productRoutes);
-app.use('/sanggars', sanggarRoutes);
-app.use('/batik-categories', batikCategoryRoutes);
-app.use('/reviews', reviewRoutes);
-app.use('/criteria', criteriaRoutes);
-app.use('/recommendations', recommendationRoutes);
-app.use('/spk-sessions', spkSessionRoutes);
-
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/sanggars', sanggarRoutes);
+app.use('/api/batik-categories', batikCategoryRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/criteria', criteriaRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/spk-sessions', spkSessionRoutes);
 const server = app.listen(PORT, () => {
   console.log(`Server berjalan di PORT : ${PORT}`);
 });
