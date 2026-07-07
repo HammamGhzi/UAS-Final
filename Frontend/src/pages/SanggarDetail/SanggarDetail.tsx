@@ -287,30 +287,29 @@ const formatPrice = (price: number) =>
 // Card produk lokal (subset field dari model Produk: nama, harga, foto, rating, kategori, motif)
 const DummyProductCard = ({ produk }: { produk: DummyProduk }) => (
   <Link to={`/produk/${produk.id}`}>
-    <Card hover className="h-full">
-      <div className="aspect-square overflow-hidden bg-gray-100">
+    <div className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-brown-200 hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+      <div className="h-32 sm:h-36 overflow-hidden bg-brown-100 relative">
         <img
           src={produk.foto[0]}
           alt={produk.nama}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+        <span className="absolute top-2 left-2 bg-[#432f27]/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+          {produk.kategori}
+        </span>
       </div>
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#b08d28] bg-[#b08d28]/10 px-2 py-0.5 rounded-full">
-            {produk.kategori}
-          </span>
-          <span className="text-[11px] text-brown-600">{produk.motif}</span>
+      <div className="p-2.5 flex flex-col flex-1">
+        <h3 className="font-serif font-bold text-brown-900 text-sm mb-1 line-clamp-1">
+          {produk.nama}
+        </h3>
+        <div className="flex items-center gap-1 mb-1">
+          <Star size={12} className="fill-[#b08d28] text-[#b08d28]" />
+          <span className="text-xs text-brown-700">{produk.rating.toFixed(1)}</span>
+          <span className="text-[11px] text-brown-500">({produk.jumlahReview})</span>
         </div>
-        <h3 className="font-semibold text-brown-900 mb-1 line-clamp-1">{produk.nama}</h3>
-        <p className="text-lime-900 font-bold mb-2">{formatPrice(produk.harga)}</p>
-        <div className="flex items-center gap-1">
-          <Star size={14} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-sm text-brown-700">{produk.rating.toFixed(1)}</span>
-          <span className="text-xs text-gray-500">({produk.jumlahReview})</span>
-        </div>
+        <p className="text-[#b08d28] font-bold text-sm mt-auto">{formatPrice(produk.harga)}</p>
       </div>
-    </Card>
+    </div>
   </Link>
 );
 
