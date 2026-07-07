@@ -13,7 +13,7 @@ import {
   productToFormValues,
   type ProductFormValues,
   type ProductRecord,
-} from "@/pages/adminSanggar/ProductStore";
+} from "@/pages/adminSanggar/productStore";
 import { useCreateProduct, useDeleteProduct, useProducts, useUpdateProduct } from "./useProducts";
 import ProductFormModal from "@/pages/adminSanggar/productFormModal";
 

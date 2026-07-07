@@ -8,7 +8,7 @@ import {
   productCategories,
   productSchema,
   type ProductFormValues,
-} from "@/pages/adminSanggar/ProductStore";
+} from "@/pages/adminSanggar/productStore";
 
 type ProductFormModalProps = {
   open: boolean;

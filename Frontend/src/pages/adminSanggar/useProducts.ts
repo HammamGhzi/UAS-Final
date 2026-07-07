@@ -5,7 +5,7 @@ import {
   getStoredProducts,
   updateProductRecord,
   type ProductFormValues,
-} from "@/pages/adminSanggar/ProductStore";
+} from "@/pages/adminSanggar/productStore";
 
 // Query key terpusat biar gampang di-invalidate.
 export const PRODUCTS_QUERY_KEY = ["admin-sanggar-products"] as const;
