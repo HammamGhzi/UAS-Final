@@ -7,7 +7,8 @@ import { success, error } from '../utils/response';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 const SALT_ROUNDS = 10;
 
-export async function register(req: Request, res: Response) {
+// Daftarkan pengguna baru ke sistem
+export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, role } = req.body;
 
@@ -33,9 +34,10 @@ export async function register(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Register failed', 500);
   }
-}
+};
 
-export async function login(req: Request, res: Response) {
+// Login pengguna dan buat token JWT
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -61,5 +63,5 @@ export async function login(req: Request, res: Response) {
   } catch (err) {
     return error(res, (err as Error).message || 'Login gagal', 500);
   }
-}
->>>>>>> 85de34b0dfb057118f8a8a420b80e772e43fbbdc
+};
+
