@@ -13,6 +13,7 @@ import reviewRoutes from './routes/reviewRoutes';
 import criteriaRoutes from './routes/criteriaRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import spkSessionRoutes from './routes/spkSessionRoutes';
+import regionRoutes from './routes/regionRoutes'; 
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -33,6 +34,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/criteria', criteriaRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/spk-sessions', spkSessionRoutes);
+app.use('/api/regions', regionRoutes);
 const server = app.listen(PORT, () => {
   console.log(`Server berjalan di PORT : ${PORT}`);
 });

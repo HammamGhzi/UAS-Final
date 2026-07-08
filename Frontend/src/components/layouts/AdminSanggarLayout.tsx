@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Boxes, LayoutGrid, LogOut, Menu, Settings, Star, Store } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 const sidebarItems = [
   { to: "/admin-sanggar", icon: LayoutGrid, label: "Utama", section: "Utama" },
@@ -12,11 +13,14 @@ const sidebarItems = [
 const AdminSanggarLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
 
-  const handleLogout = () => {
+const handleLogout = () => {
+    queryClient.clear();
     logout();
-    navigate("/admin/login");
+    navigate("/form/login");
   };
 
   return (
@@ -68,8 +72,10 @@ const AdminSanggarLayout = () => {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
               <Store size={20} className="text-[#b6ec00]" />
             </div>
-            <div>
-              <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">Hammam</p>
+          <div>
+              <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">
+                {user?.email || "Admin Sanggar"}
+              </p>
               <p className="text-[13px] leading-tight text-[#555555]">Admin Sanggar</p>
             </div>
           </div>

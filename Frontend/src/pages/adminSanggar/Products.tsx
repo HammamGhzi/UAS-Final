@@ -2,12 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit3, Lock, PackagePlus, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/UI/Button";
-import {
-  fieldLabels,
-  getMissingSanggarFields,
-  getStoredSanggarDraft,
-  isSanggarComplete,
-} from "./sanggarDraft";
+import { useMySanggar } from "./useMySanggar";
 import {
   getCategoryName,
   productToFormValues,
@@ -22,9 +17,8 @@ const AdminSanggarProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null);
 
-  const sanggarDraft = useMemo(() => getStoredSanggarDraft(), []);
-  const complete = isSanggarComplete(sanggarDraft);
-  const missingFields = getMissingSanggarFields(sanggarDraft);
+  const { data: sanggar } = useMySanggar();
+  const complete = Boolean(sanggar);
 
   const { data: products = [], isLoading } = useProducts();
   const createProduct = useCreateProduct();
@@ -98,18 +92,13 @@ const AdminSanggarProducts = () => {
                 <h1 className="text-[26px] font-extrabold text-[#2f2f2f]">
                   Produk belum bisa dikelola
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747474]">
-                  Lengkapi data wajib sanggar terlebih dahulu supaya toko dianggap aktif.
-                  Data yang belum lengkap:{" "}
-                  <span className="font-bold text-[#333333]">
-                    {missingFields.map((field) => fieldLabels[field]).join(", ")}
-                  </span>
-                  .
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747474]">
+                  Lengkapi data wajib sanggar terlebih dahulu di halaman Utama supaya toko dianggap aktif.
                 </p>
               </div>
             </div>
             <Link
-              to="/admin-sanggar/settings"
+              to="/admin-sanggar"
               className="inline-flex items-center justify-center rounded-full bg-[#252525] px-6 py-3 text-sm font-bold text-white transition hover:bg-black"
             >
               Lengkapi Data

@@ -100,5 +100,16 @@ export const adminApi = {
   deleteProduct: (id: string) => api.delete(`/admin/products/${id}`),
   getProducts: () => api.get('/admin/products'),
 };
+export const mySanggarApi = {
+  getMine: () => api.get('/sanggars/me'),
+  create: (data: Record<string, unknown>) => api.post('/sanggars', data),
+  update: (id: number, data: Record<string, unknown>) => api.put(`/sanggars/${id}`, data),
+};
 
+export const regionApi = {
+  getAll: () => api.get('/regions'),
+  create: (data: { name: string }) => api.post('/regions', data),
+  update: (id: number, data: { name: string }) => api.put(`/regions/${id}`, data),
+  delete: (id: number) => api.delete(`/regions/${id}`),
+};
 export default api;

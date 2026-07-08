@@ -30,6 +30,7 @@ import SuperAdminPenggunaPage from '../pages/superAdmin/Pengguna';
 import ProtectedRoute from './ProtectedRoute';
 import ProdukList from '../pages/ProdukList/ProdukList';
 import SuperAdminKategoriPage from '../pages/superAdmin/Kategori';
+import SuperAdminRegionsPage from '../pages/superAdmin/Region';
 
 export const router = createBrowserRouter([
   {
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
           { path: 'reviews', element: <SuperAdminReviewsPage /> },
           { path: 'pengguna', element: <SuperAdminPenggunaPage /> },
           { path: 'kategori', element: <SuperAdminKategoriPage /> },
+          { path: 'regions', element: <SuperAdminRegionsPage /> }, // <- baru
         ],
       },
     ],
