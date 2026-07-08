@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Boxes, LayoutGrid, LogOut, Menu, Settings, Star, Store } from "lucide-react";
+import { Boxes, LayoutGrid, LogOut, Menu, Settings, Star, Store, X } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -17,15 +18,50 @@ const AdminSanggarLayout = () => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
-const handleLogout = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Tutup drawer otomatis tiap pindah halaman (biar gak nyangkut kebuka di HP/tablet)
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
     queryClient.clear();
     logout();
     navigate("/form/login");
   };
 
+  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <nav className="flex flex-1 flex-col items-center gap-6 md:gap-9">
+      {sidebarItems.map((item) => {
+        const Icon = item.icon;
+        const active = location.pathname === item.to;
+
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={onNavigate}
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 transition md:h-11 md:w-11 md:justify-center md:px-0 md:py-0 ${
+              active
+                ? "bg-[#fff4df] text-[#ff9800] md:bg-transparent"
+                : "text-[#7a7a7a] hover:bg-[#f2f2f2]"
+            }`}
+            aria-label={item.label}
+            title={item.label}
+          >
+            <Icon size={26} strokeWidth={active ? 3 : 2.8} className="shrink-0 md:h-8 md:w-8" />
+            <span className="text-sm font-bold md:hidden">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
   return (
     <div className="min-h-screen bg-[#f5f6fb] text-[#202020]">
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-[88px] flex-col items-center bg-white py-9">
+      {/* Sidebar desktop/tablet: rail ikon tetap di kiri, mulai muncul dari breakpoint md */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[88px] flex-col items-center bg-white py-9 md:flex">
         <button
           type="button"
           className="mb-20 flex h-10 w-10 items-center justify-center rounded-xl text-[#222222] transition hover:bg-[#f2f2f2]"
@@ -34,26 +70,7 @@ const handleLogout = () => {
           <Menu size={28} strokeWidth={2.4} />
         </button>
 
-        <nav className="flex flex-1 flex-col items-center gap-9">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            const active = location.pathname === item.to;
-
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
-                  active ? "text-[#ff9800]" : "text-[#7a7a7a] hover:bg-[#f2f2f2]"
-                }`}
-                aria-label={item.label}
-                title={item.label}
-              >
-                <Icon size={32} strokeWidth={active ? 3 : 2.8} />
-              </Link>
-            );
-          })}
-        </nav>
+        <NavLinks />
 
         <button
           type="button"
@@ -66,22 +83,75 @@ const handleLogout = () => {
         </button>
       </aside>
 
-      <div className="min-h-screen pl-[88px]">
-        <header className="flex h-[92px] items-center justify-end px-8">
+      {/* Overlay + drawer sidebar untuk HP/tablet, muncul saat tombol menu di header ditekan */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[240px] flex-col bg-white px-5 py-7 shadow-2xl transition-transform duration-300 md:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="mb-8 flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
+              <Store size={18} className="text-[#b6ec00]" />
+            </div>
+            <span className="text-sm font-extrabold text-[#252525]">Admin Sanggar</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#222222] transition hover:bg-[#f2f2f2]"
+            aria-label="Tutup menu"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        <NavLinks onNavigate={() => setMobileOpen(false)} />
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-6 flex items-center gap-3 rounded-xl px-4 py-2.5 text-[#8b8b8b] transition hover:bg-[#fff1f1] hover:text-red-500"
+          aria-label="Logout"
+        >
+          <LogOut size={24} />
+          <span className="text-sm font-bold">Logout</span>
+        </button>
+      </aside>
+
+      <div className="min-h-screen md:pl-[88px]">
+        <header className="flex h-[76px] items-center justify-between gap-3 px-4 sm:h-[92px] sm:px-6 md:justify-end md:px-8">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#222222] transition hover:bg-[#f2f2f2] md:hidden"
+            aria-label="Buka menu"
+          >
+            <Menu size={26} strokeWidth={2.4} />
+          </button>
+
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white">
               <Store size={20} className="text-[#b6ec00]" />
             </div>
-          <div>
-              <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">
+            <div className="min-w-0">
+              <p className="truncate text-[14px] font-bold leading-tight text-[#3b3b3b] sm:text-[16px]">
                 {user?.email || "Admin Sanggar"}
               </p>
-              <p className="text-[13px] leading-tight text-[#555555]">Admin Sanggar</p>
+              <p className="text-[12px] leading-tight text-[#555555] sm:text-[13px]">Admin Sanggar</p>
             </div>
           </div>
         </header>
 
-        <main className="px-[clamp(2rem,5vw,4.25rem)] pb-12 pt-4">
+        <main className="px-4 pb-12 pt-4 sm:px-6 md:px-[clamp(2rem,5vw,4.25rem)]">
           <Outlet />
         </main>
       </div>
