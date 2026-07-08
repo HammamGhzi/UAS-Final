@@ -1,4 +1,4 @@
-import type { ProductRecord } from "@/pages/adminSanggar/ProductStore";
+import type { ProductRecord } from "@/pages/adminSanggar/productStore";
 
 // Bentuk data mengikuti model `Review` di backend:
 // id, productId, reviewerName, quality, popularity, design, comment, createdAt.

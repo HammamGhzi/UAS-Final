@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, LogOut, MapPin, Menu, Package, ShieldCheck, Star, Tag, Users } from "lucide-react";
+import { LayoutGrid, LogOut, Map, MapPin, Menu, Package, ShieldCheck, Star, Tag, Users } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 
@@ -8,6 +8,7 @@ const sidebarItems = [
   { to: "/super-admin/sanggar", icon: MapPin, label: "Sanggar" },
   { to: "/super-admin/produk", icon: Package, label: "Produk" },
   { to: "/super-admin/kategori", icon: Tag, label: "Kategori Batik" },
+  { to: "/super-admin/regions", icon: Map, label: "Wilayah" },
   { to: "/super-admin/reviews", icon: Star, label: "Reviews" },
   { to: "/super-admin/pengguna", icon: Users, label: "Pengguna" },
 ];
@@ -15,6 +16,7 @@ const SuperAdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
 
   const handleLogout = () => {
     logout();
@@ -84,10 +86,10 @@ const SuperAdminLayout = () => {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
               <ShieldCheck size={20} className="text-[#b6ec00]" />
             </div>
-            <div>
-              <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">Hammam</p>
+           <p className="text-[16px] font-bold leading-tight text-[#3b3b3b]">
+                {user?.email || "Super Admin"}
+              </p>
               <p className="text-[13px] leading-tight text-[#555555]">Super Admin</p>
-            </div>
           </div>
         </header>
 

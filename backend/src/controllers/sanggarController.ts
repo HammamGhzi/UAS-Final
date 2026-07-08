@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { success, error } from '../utils/response';
 
-// Ambil semua data sanggar beserta region dan produk
 export const getAllSanggars = async (req: Request, res: Response) => {
   try {
     const sanggars = await prisma.sanggar.findMany({ include: { region: true, products: true } });
@@ -12,7 +11,6 @@ export const getAllSanggars = async (req: Request, res: Response) => {
   }
 };
 
-// Ambil satu sanggar berdasarkan id
 export const getSanggarById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
@@ -20,25 +18,39 @@ export const getSanggarById = async (req: Request, res: Response) => {
       where: { id },
       include: { region: true, products: true },
     });
-
-    if (!sanggar) {
-      return error(res, 'Sanggar not found', 404);
-    }
-
+    if (!sanggar) return error(res, 'Sanggar not found', 404);
     return success(res, sanggar);
   } catch (err) {
     return error(res, (err as Error).message || 'Failed to get sanggar');
   }
 };
 
-// Buat sanggar baru
+// Dipanggil dashboard admin sanggar setiap login/refresh untuk cek "sudah punya toko atau belum"
+export const getMySanggar = async (req: Request, res: Response) => {
+  try {
+    const adminId = (req as any).user.id; // dari token JWT, bukan localStorage
+    const sanggar = await prisma.sanggar.findFirst({
+      where: { adminId },
+      include: { region: true, products: true },
+    });
+    return success(res, sanggar); // null wajar kalau admin belum pernah isi form
+  } catch (err) {
+    return error(res, (err as Error).message || 'Failed to get sanggar');
+  }
+};
+
+// adminId WAJIB dari token, bukan dari body — supaya gak bisa dipalsuin dari frontend
 export const createSanggar = async (req: Request, res: Response) => {
   try {
-    const { regionId, adminId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
+    const adminId = (req as any).user.id;
+    const { regionId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
+
+    const existing = await prisma.sanggar.findFirst({ where: { adminId } });
+    if (existing) return error(res, 'Anda sudah memiliki sanggar terdaftar', 409);
 
     const sanggar = await prisma.sanggar.create({
       data: {
-        regionId,
+        regionId: Number(regionId),
         adminId,
         name,
         ownerName,
@@ -57,17 +69,24 @@ export const createSanggar = async (req: Request, res: Response) => {
   }
 };
 
-// Perbarui data sanggar yang sudah ada
 export const updateSanggar = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { regionId, adminId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
+    const currentUser = (req as any).user;
+    const { regionId, name, ownerName, address, latitude, longitude, phone, description, image } = req.body;
+
+    const existing = await prisma.sanggar.findUnique({ where: { id } });
+    if (!existing) return error(res, 'Sanggar not found', 404);
+
+    // ADMIN cuma boleh edit sanggar miliknya; SUPER_ADMIN boleh edit semua
+    if (currentUser.role !== 'SUPER_ADMIN' && existing.adminId !== currentUser.id) {
+      return error(res, 'Anda tidak punya akses ke sanggar ini', 403);
+    }
 
     const sanggar = await prisma.sanggar.update({
       where: { id },
       data: {
-        regionId,
-        adminId,
+        regionId: regionId !== undefined ? Number(regionId) : undefined,
         name,
         ownerName,
         address,
@@ -85,7 +104,6 @@ export const updateSanggar = async (req: Request, res: Response) => {
   }
 };
 
-// Hapus sanggar berdasarkan id
 export const deleteSanggar = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
