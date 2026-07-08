@@ -70,10 +70,14 @@ export const produkApi = {
   getByKategori: (kategori: string) => api.get(`/produk/kategori/${kategori}`),
 };
 
+// CRUD Sanggar (list/delete dipakai Super Admin) — konek ke sanggarController.ts backend
+// Catatan: mount point backend-nya '/sanggars' (jamak), bukan '/sanggar'.
 export const sanggarApi = {
-  getAll: () => api.get('/sanggar'),
-  getById: (id: string) => api.get(`/sanggar/${id}`),
-  getRekomendasi: () => api.get('/sanggar/rekomendasi'),
+  getAll: () => api.get('/sanggars'),
+  getById: (id: string | number) => api.get(`/sanggars/${id}`),
+  update: (id: string | number, data: Record<string, unknown>) => api.put(`/sanggars/${id}`, data),
+  delete: (id: string | number) => api.delete(`/sanggars/${id}`),
+  getRekomendasi: () => api.get('/sanggars/rekomendasi'),
 };
 
 export const reviewApi = {
