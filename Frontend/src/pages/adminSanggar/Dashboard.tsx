@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormRegisterReturn } from "react-hook-form";
@@ -16,11 +16,9 @@ import {
 import { Button } from "../../components/UI/Button";
 import { sanggarSchema, type SanggarFormValues } from "./sanggarDraft";
 import { useMySanggar, useRegions, useCreateSanggar } from "./useMySanggar";
-
-const stats = [
-  { label: "Produk aktif", value: "0", icon: Package },
-  { label: "Rating toko", value: "-", icon: CheckCircle2 },
-];
+import { useProducts } from "./useProducts";
+import { useReviews } from "./useReviews";
+import { getAverageRating } from "./reviewStore";
 
 const emptyFormValues: SanggarFormValues = {
   regionId: "",
@@ -38,6 +36,8 @@ const AdminSanggarDashboard = () => {
   const { data: sanggar, isPending, isError } = useMySanggar();
   const { data: regions = [] } = useRegions();
   const createSanggar = useCreateSanggar();
+  const { data: products = [] } = useProducts();
+  const { data: reviews = [] } = useReviews();
 
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [imageError, setImageError] = useState("");
@@ -59,6 +59,21 @@ const AdminSanggarDashboard = () => {
   const hasStore = Boolean(sanggar);
   const showGreenBanner = hasStore && !bannerDismissed;
   const isSaving = createSanggar.isPending;
+
+  const totalProducts = products.length;
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + getAverageRating(review), 0) / reviews.length
+      : 0;
+
+  const stats = [
+    { label: "Produk aktif", value: String(totalProducts), icon: Package },
+    {
+      label: "Rating toko",
+      value: reviews.length > 0 ? averageRating.toFixed(1) : "-",
+      icon: CheckCircle2,
+    },
+  ];
 
   const handleImageFile = (file: File | undefined) => {
     if (!file) return;
@@ -171,17 +186,15 @@ const AdminSanggarDashboard = () => {
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
                 <ImagePlus size={22} />
               </div>
-              <Link
-                to={hasStore ? "/admin-sanggar/products" : "/admin-sanggar"}
-                className={`flex shrink-0 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition ${
-                  hasStore
-                    ? "bg-[#b6ec00] text-white hover:bg-[#9fd000]"
-                    : "bg-[#252525] text-white hover:bg-black"
-                }`}
-              >
-                {hasStore ? <Package size={15} /> : <MapPin size={15} />}
-                {hasStore ? "Kelola Produk" : "Lengkapi Data"}
-              </Link>
+              {!hasStore && (
+                <Link
+                  to="/admin-sanggar"
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#252525] px-5 py-2.5 text-xs font-bold text-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:bg-black"
+                >
+                  <MapPin size={15} />
+                  Lengkapi Data
+                </Link>
+              )}
             </div>
             <h3 className="mt-4 text-xl font-bold text-[#333333]">
               {hasStore ? "Status Toko" : "Syarat Toko"}

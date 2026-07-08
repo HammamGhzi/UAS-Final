@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Lock, MessageSquareText, Search, Star } from "lucide-react";
+import {
+  ChevronDown,
+  Lock,
+  MessageSquareText,
+  Package,
+  Search,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { useMySanggar } from "./useMySanggar";
 import { useProducts, useProductCategories } from "./useProducts";
 import { getAverageRating, getProductAverageRating } from "./reviewStore";
@@ -37,12 +45,21 @@ const AdminSanggarReviews = () => {
   return (
     <div className="space-y-8">
       <section className="grid gap-6 lg:grid-cols-3">
-        <InfoCard title="Total Ulasan" value={complete ? String(reviews.length) : "0"} />
+        <InfoCard
+          title="Total Ulasan"
+          value={complete ? String(reviews.length) : "0"}
+          icon={MessageSquareText}
+        />
         <InfoCard
           title="Rata-rata Rating"
           value={complete && reviews.length > 0 ? overallAverage.toFixed(1) : "-"}
+          icon={Star}
         />
-        <InfoCard title="Produk Ternilai" value={complete ? String(ratedProductCount) : "0"} />
+        <InfoCard
+          title="Produk Ternilai"
+          value={complete ? String(ratedProductCount) : "0"}
+          icon={Package}
+        />
       </section>
 
       {!complete && (
@@ -103,20 +120,26 @@ const AdminSanggarReviews = () => {
           </div>
 
           {products.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <FilterChip
-                active={productFilter === ""}
-                label="Semua Produk"
-                onClick={() => setProductFilter("")}
-              />
-              {products.map((product) => (
-                <FilterChip
-                  key={product.id}
-                  active={productFilter === String(product.id)}
-                  label={product.productName}
-                  onClick={() => setProductFilter(String(product.id))}
+            <div className="mt-4 max-w-xs">
+              <label className="relative block">
+                <span className="sr-only">Filter produk</span>
+                <select
+                  value={productFilter}
+                  onChange={(event) => setProductFilter(event.target.value)}
+                  className="h-[46px] w-full appearance-none rounded-full border border-[#d6d6d6] bg-white pl-5 pr-10 text-sm font-bold text-[#333333] outline-none transition focus:border-[#252525] focus:ring-2 focus:ring-[#252525]/10"
+                >
+                  <option value="">Semua Produk</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={String(product.id)}>
+                      {product.productName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#8a8a8a]"
                 />
-              ))}
+              </label>
             </div>
           )}
 
@@ -218,31 +241,26 @@ const AdminSanggarReviews = () => {
   );
 };
 
-const InfoCard = ({ title, value }: { title: string; value: string }) => (
-  <div className="h-[146px] rounded-[24px] border border-[#d0d0d0] bg-white px-7 py-6">
-    <p className="text-sm font-bold text-[#777777]">{title}</p>
-    <p className="mt-5 text-[34px] font-extrabold text-[#262626]">{value}</p>
-  </div>
-);
-
-const FilterChip = ({
-  label,
-  active,
-  onClick,
+const InfoCard = ({
+  title,
+  value,
+  icon: Icon,
 }: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
+  title: string;
+  value: string;
+  icon: LucideIcon;
 }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
-      active ? "bg-[#252525] text-white" : "bg-[#f0f0f0] text-[#555555] hover:bg-[#e4e4e4]"
-    }`}
-  >
-    {label}
-  </button>
+  <div className="rounded-[24px] border border-[#d0d0d0] bg-white px-7 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)]">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-bold text-[#777777]">{title}</p>
+        <p className="mt-5 text-[34px] font-extrabold leading-none text-[#262626]">{value}</p>
+      </div>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fff4df] text-[#ff9800]">
+        <Icon size={25} />
+      </div>
+    </div>
+  </div>
 );
 
 const ScoreItem = ({ label, value }: { label: string; value: number }) => (
