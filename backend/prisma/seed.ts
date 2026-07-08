@@ -12,7 +12,7 @@ async function main() {
     update: {
       password: hashedPassword,
       role: 'SUPER_ADMIN',
-    },
+    },  
     create: {
       email,
       password: hashedPassword,
