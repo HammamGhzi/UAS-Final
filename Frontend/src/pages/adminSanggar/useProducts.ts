@@ -2,54 +2,66 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createProductRecord,
   deleteProductRecord,
-  getStoredProducts,
+  getCategories,
+  getProducts,
   updateProductRecord,
   type ProductFormValues,
 } from "@/pages/adminSanggar/productStore";
+import { useMySanggar } from "./useMySanggar";
 
-// Query key terpusat biar gampang di-invalidate.
-export const PRODUCTS_QUERY_KEY = ["admin-sanggar-products"] as const;
+export const PRODUCTS_QUERY_KEY = "admin-sanggar-products" as const;
+export const CATEGORIES_QUERY_KEY = ["batik-categories"] as const;
 
-// NOTE: queryFn & mutationFn sekarang manggil productStore.ts (localStorage).
-// Nanti kalau backend sudah disambungkan, cukup ganti isi productStore.ts
-// jadi panggilan axios ke /products — hook & komponen di bawah gak perlu diubah.
+// Produk otomatis di-scope ke sanggar milik admin yang login
+export const useProducts = () => {
+  const { data: sanggar } = useMySanggar();
 
-export const useProducts = () =>
+  return useQuery({
+    queryKey: [PRODUCTS_QUERY_KEY, sanggar?.id],
+    queryFn: () => getProducts(sanggar!.id),
+    enabled: Boolean(sanggar?.id),
+  });
+};
+
+export const useProductCategories = () =>
   useQuery({
-    queryKey: PRODUCTS_QUERY_KEY,
-    queryFn: async () => getStoredProducts(),
+    queryKey: CATEGORIES_QUERY_KEY,
+    queryFn: getCategories,
   });
 
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
+  const { data: sanggar } = useMySanggar();
 
   return useMutation({
-    mutationFn: async (values: ProductFormValues) => createProductRecord(values),
+    mutationFn: (values: ProductFormValues) => createProductRecord(values),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_QUERY_KEY, sanggar?.id] });
     },
   });
 };
 
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
+  const { data: sanggar } = useMySanggar();
 
   return useMutation({
-    mutationFn: async ({ id, values }: { id: number; values: ProductFormValues }) =>
+    mutationFn: ({ id, values }: { id: number; values: ProductFormValues }) =>
       updateProductRecord(id, values),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_QUERY_KEY, sanggar?.id] });
     },
   });
 };
 
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
+  const { data: sanggar } = useMySanggar();
 
   return useMutation({
-    mutationFn: async (id: number) => deleteProductRecord(id),
+    mutationFn: (id: number) => deleteProductRecord(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_QUERY_KEY, sanggar?.id] });
     },
   });
 };

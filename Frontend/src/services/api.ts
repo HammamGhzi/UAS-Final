@@ -112,4 +112,16 @@ export const regionApi = {
   update: (id: number, data: { name: string }) => api.put(`/regions/${id}`, data),
   delete: (id: number) => api.delete(`/regions/${id}`),
 };
+export const productApi = {
+  getAll: (sanggarId?: number) =>
+    api.get('/products', sanggarId ? { params: { sanggarId } } : undefined),
+  getById: (id: number) => api.get(`/products/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/products', data),
+  update: (id: number, data: Record<string, unknown>) => api.put(`/products/${id}`, data),
+  delete: (id: number) => api.delete(`/products/${id}`),
+};
+
+export const myReviewApi = {
+  getMine: () => api.get('/reviews/mine'),
+};
 export default api;

@@ -84,3 +84,24 @@ export const deleteReview = async (req: Request, res: Response) => {
     return error(res, (err as Error).message || 'Failed to delete review');
   }
 };
+// Ambil semua review dari produk-produk milik sanggar admin yang login
+export const getMyReviews = async (req: Request, res: Response) => {
+  try {
+    const adminId = (req as any).user.id;
+
+    const sanggar = await prisma.sanggar.findFirst({ where: { adminId } });
+    if (!sanggar) {
+      return success(res, []); // belum punya sanggar -> gak ada review, bukan error
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: { product: { sanggarId: sanggar.id } },
+      include: { product: true, user: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return success(res, reviews);
+  } catch (err) {
+    return error(res, (err as Error).message || 'Gagal mendapatkan ulasan');
+  }
+};

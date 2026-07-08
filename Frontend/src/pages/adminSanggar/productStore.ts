@@ -1,14 +1,5 @@
 import { z } from "zod";
-
-// Kategori sementara di frontend, nanti diganti fetch dari /categories
-// begitu backend disambungkan.
-export const productCategories = [
-  { id: "1", name: "Flora" },
-  { id: "2", name: "Fauna" },
-  { id: "3", name: "Geometris" },
-  { id: "4", name: "Kontemporer" },
-  { id: "5", name: "Klasik" },
-];
+import { productApi, batikCategoryApi } from "@/services/api";
 
 const numericPattern = /^\d+$/;
 
@@ -32,10 +23,12 @@ export const productSchema = z.object({
 
 export type ProductFormValues = z.infer<typeof productSchema>;
 
-// Bentuk data produk yang sudah tersimpan, mengikuti model `Product`
-// (sanggarId sengaja belum dipakai karena belum konek backend).
+export type CategoryRecord = { id: number; categoryName: string };
+
+// Bentuk data mengikuti model `Product` di backend
 export type ProductRecord = {
   id: number;
+  sanggarId: number;
   categoryId: number;
   productName: string;
   price: number;
@@ -44,9 +37,8 @@ export type ProductRecord = {
   image: string;
   createdAt: string;
   updatedAt: string;
+  category?: { id: number; categoryName: string };
 };
-
-const STORAGE_KEY = "adminSanggarProducts";
 
 export const emptyProductForm: ProductFormValues = {
   categoryId: "",
@@ -57,26 +49,18 @@ export const emptyProductForm: ProductFormValues = {
   image: "",
 };
 
-export const getCategoryName = (categoryId: number) =>
-  productCategories.find((category) => Number(category.id) === categoryId)?.name ?? "-";
+type ApiEnvelope<T> = { message?: string; data: T };
 
-export const getStoredProducts = (): ProductRecord[] => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return [];
-
-  try {
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? (parsed as ProductRecord[]) : [];
-  } catch {
-    return [];
-  }
+export const getCategories = async (): Promise<CategoryRecord[]> => {
+  const res = await batikCategoryApi.getAll();
+  const body: ApiEnvelope<CategoryRecord[]> = res.data;
+  return body.data ?? [];
 };
 
-const persistProducts = (products: ProductRecord[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-};
+export const getCategoryNameFromList = (categoryId: number, categories: CategoryRecord[]) =>
+  categories.find((category) => category.id === categoryId)?.categoryName ?? "-";
 
-const toRecordShape = (values: ProductFormValues) => ({
+const toPayload = (values: ProductFormValues) => ({
   categoryId: Number(values.categoryId),
   productName: values.productName.trim(),
   price: Number(values.price),
@@ -85,46 +69,30 @@ const toRecordShape = (values: ProductFormValues) => ({
   image: values.image,
 });
 
-export const createProductRecord = (values: ProductFormValues): ProductRecord => {
-  const products = getStoredProducts();
-  const now = new Date().toISOString();
-
-  const newProduct: ProductRecord = {
-    id: Date.now(),
-    ...toRecordShape(values),
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  persistProducts([newProduct, ...products]);
-  return newProduct;
+export const getProducts = async (sanggarId: number): Promise<ProductRecord[]> => {
+  const res = await productApi.getAll(sanggarId);
+  const body: ApiEnvelope<ProductRecord[]> = res.data;
+  // Backend field price adalah Decimal (kembali sebagai string dari Prisma+JSON), pastikan jadi number
+  return (body.data ?? []).map((p) => ({ ...p, price: Number(p.price) }));
 };
 
-export const updateProductRecord = (
+export const createProductRecord = async (values: ProductFormValues): Promise<ProductRecord> => {
+  const res = await productApi.create(toPayload(values));
+  const body: ApiEnvelope<ProductRecord> = res.data;
+  return body.data;
+};
+
+export const updateProductRecord = async (
   id: number,
   values: ProductFormValues
-): ProductRecord | null => {
-  const products = getStoredProducts();
-  let updated: ProductRecord | null = null;
-
-  const next = products.map((product) => {
-    if (product.id !== id) return product;
-
-    updated = {
-      ...product,
-      ...toRecordShape(values),
-      updatedAt: new Date().toISOString(),
-    };
-    return updated;
-  });
-
-  persistProducts(next);
-  return updated;
+): Promise<ProductRecord> => {
+  const res = await productApi.update(id, toPayload(values));
+  const body: ApiEnvelope<ProductRecord> = res.data;
+  return body.data;
 };
 
-export const deleteProductRecord = (id: number) => {
-  const products = getStoredProducts();
-  persistProducts(products.filter((product) => product.id !== id));
+export const deleteProductRecord = async (id: number): Promise<void> => {
+  await productApi.delete(id);
 };
 
 export const productToFormValues = (product: ProductRecord): ProductFormValues => ({
