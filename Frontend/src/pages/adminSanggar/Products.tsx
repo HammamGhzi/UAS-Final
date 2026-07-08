@@ -1,15 +1,21 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit3, Lock, PackagePlus, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/UI/Button";
 import { useMySanggar } from "./useMySanggar";
 import {
-  getCategoryName,
+  getCategoryNameFromList,
   productToFormValues,
   type ProductFormValues,
   type ProductRecord,
 } from "@/pages/adminSanggar/productStore";
-import { useCreateProduct, useDeleteProduct, useProducts, useUpdateProduct } from "./useProducts";
+import {
+  useCreateProduct,
+  useDeleteProduct,
+  useProductCategories,
+  useProducts,
+  useUpdateProduct,
+} from "./useProducts";
 import ProductFormModal from "@/pages/adminSanggar/productFormModal";
 
 const AdminSanggarProducts = () => {
@@ -20,6 +26,7 @@ const AdminSanggarProducts = () => {
   const { data: sanggar } = useMySanggar();
   const complete = Boolean(sanggar);
 
+  const { data: categories = [] } = useProductCategories();
   const { data: products = [], isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
@@ -166,8 +173,8 @@ const AdminSanggarProducts = () => {
                   <h2 className="text-xl font-extrabold text-[#333333]">
                     {product.productName}
                   </h2>
-                  <p className="mt-1 text-sm text-[#777777]">
-                    {getCategoryName(product.categoryId)} - Rp{" "}
+                 <p className="mt-1 text-sm text-[#777777]">
+                    {getCategoryNameFromList(product.categoryId, categories)} - Rp{" "}
                     {product.price.toLocaleString("id-ID")} - Stok {product.stock}
                   </p>
                   {product.description && (

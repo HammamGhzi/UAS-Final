@@ -1,13 +1,13 @@
 import express from 'express';
 import * as productController from '../controllers/productController';
-import { authMiddleware } from '../middlewares/authMiddleware';
+import { authMiddleware, authorizeRoles } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.get('/', productController.getAllProducts);
+router.get('/', productController.getAllProducts); // support ?sanggarId=
 router.get('/:id', productController.getProductById);
-router.post('/', authMiddleware, productController.createProduct);
-router.put('/:id', authMiddleware, productController.updateProduct);
-router.delete('/:id', authMiddleware, productController.deleteProduct);
+router.post('/', authMiddleware, authorizeRoles(['ADMIN']), productController.createProduct);
+router.put('/:id', authMiddleware, authorizeRoles(['ADMIN', 'SUPER_ADMIN']), productController.updateProduct);
+router.delete('/:id', authMiddleware, authorizeRoles(['ADMIN', 'SUPER_ADMIN']), productController.deleteProduct);
 
 export default router;

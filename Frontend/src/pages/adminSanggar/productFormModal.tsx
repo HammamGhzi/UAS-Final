@@ -5,10 +5,10 @@ import { ImagePlus, Loader2, PackagePlus, X } from "lucide-react";
 import { Button } from "../../components/UI/Button";
 import {
   emptyProductForm,
-  productCategories,
   productSchema,
   type ProductFormValues,
 } from "@/pages/adminSanggar/productStore";
+import { useProductCategories } from "@/pages/adminSanggar/useProducts";
 
 type ProductFormModalProps = {
   open: boolean;
@@ -28,6 +28,7 @@ const ProductFormModal = ({
   onSubmit,
 }: ProductFormModalProps) => {
   const [imageError, setImageError] = useState("");
+  const { data: categories = [] } = useProductCategories();
 
   const {
     register,
@@ -133,10 +134,10 @@ const ProductFormModal = ({
                   errors.categoryId ? "border-red-400" : "border-[#bfc0c5]"
                 }`}
               >
-                <option value="">Pilih kategori</option>
-                {productCategories.map((category) => (
+               <option value="">Pilih kategori</option>
+                {categories.map((category) => (
                   <option key={category.id} value={category.id}>
-                    {category.name}
+                    {category.categoryName}
                   </option>
                 ))}
               </select>

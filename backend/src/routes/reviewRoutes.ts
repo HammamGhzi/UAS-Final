@@ -5,6 +5,7 @@ import { authMiddleware } from '../middlewares/authMiddleware';
 const router = express.Router();
 
 router.get('/', reviewController.getAllReviews);
+router.get('/mine', authMiddleware, reviewController.getMyReviews); // WAJIB sebelum '/:id'
 router.get('/:id', reviewController.getReviewById);
 router.post('/', authMiddleware, reviewController.createReview);
 router.put('/:id', authMiddleware, reviewController.updateReview);
