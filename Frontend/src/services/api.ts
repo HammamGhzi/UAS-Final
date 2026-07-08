@@ -45,9 +45,12 @@ export const authApi = {
   me: () => api.get('/auth/me'),
 };
 // CRUD User — untuk Super Admin kelola akun ADMIN & USER
+// CRUD User — untuk Super Admin kelola akun SUPER_ADMIN, ADMIN (sanggar), & USER
 export const userApi = {
   getAll: () => api.get('/users'),
   getById: (id: number) => api.get(`/users/${id}`),
+  create: (data: { email: string; password: string; role?: string }) =>
+    api.post('/users', data),
   update: (id: number, data: { email?: string; password?: string; role?: string }) =>
     api.put(`/users/${id}`, data),
   delete: (id: number) => api.delete(`/users/${id}`),
