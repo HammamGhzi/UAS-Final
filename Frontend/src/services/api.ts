@@ -82,12 +82,17 @@ export const sanggarApi = {
   delete: (id: string | number) => api.delete(`/sanggars/${id}`),
   getRekomendasi: () => api.get('/sanggars/rekomendasi'),
 };
-
 export const reviewApi = {
-  getByProduk: (produkId: string) => api.get(`/review/produk/${produkId}`),
-  create: (data: any) => api.post('/review', data),
+  create: (data: {
+    productId: number;
+    userId?: number | null;
+    reviewerName: string;
+    quality: number;
+    popularity: number;
+    design: number;
+    comment?: string;
+  }) => api.post('/reviews', data),
 };
-
 export const rekomendasiApi = {
   getRekomendasi: (params: any) => api.post('/rekomendasi', params),
 };

@@ -1,37 +1,37 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { clearAllReviews, getStoredReviews, seedSampleReviews } from "./reviewStore";
-import type { ProductRecord } from "@/pages/adminSanggar/productStore";
+import { useQuery } from "@tanstack/react-query";
+import { myReviewApi } from "@/services/api";
+import type { ReviewRecord } from "./reviewStore";
 
 export const REVIEWS_QUERY_KEY = ["admin-sanggar-reviews"] as const;
 
-// NOTE: sama seperti useProducts.ts, queryFn ini masih baca dari localStorage.
-// Nanti kalau backend sudah bisa filter review berdasarkan sanggar (lewat adminId),
-// tinggal ganti isi fungsi ini jadi panggilan axios ke GET /reviews.
+type BackendReview = {
+  id: number;
+  productId: number;
+  reviewerName: string;
+  quality: number;
+  popularity: number;
+  design: number;
+  comment: string | null;
+  createdAt: string;
+};
 
 export const useReviews = () =>
   useQuery({
     queryKey: REVIEWS_QUERY_KEY,
-    queryFn: async () => getStoredReviews(),
-  });
-
-export const useSeedSampleReviews = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (products: ProductRecord[]) => seedSampleReviews(products),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: REVIEWS_QUERY_KEY });
+    queryFn: async () => {
+      const res = await myReviewApi.getMine();
+      const data = res.data.data as BackendReview[];
+      return data.map(
+        (r): ReviewRecord => ({
+          id: r.id,
+          productId: r.productId,
+          reviewerName: r.reviewerName,
+          quality: r.quality,
+          popularity: r.popularity,
+          design: r.design,
+          comment: r.comment ?? "",
+          createdAt: r.createdAt,
+        })
+      );
     },
   });
-};
-
-export const useClearReviews = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => clearAllReviews(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: REVIEWS_QUERY_KEY });
-    },
-  });
-};
