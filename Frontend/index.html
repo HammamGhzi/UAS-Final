@@ -1,13 +1,256 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>canting-frontend</title>
+
+    <style>
+      /* ============ BATIK PAGE LOADER ============ */
+      #batik-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 35%, #fdfcf9 0%, #f5ede6 55%, #eee4da 100%);
+        transition: opacity 0.6s ease, visibility 0.6s ease;
+        overflow: hidden;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+      }
+
+      #batik-loader.batik-loader--hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      /* Corner batik texture, purely decorative */
+      #batik-loader::before,
+      #batik-loader::after {
+        content: "";
+        position: absolute;
+        width: 380px;
+        height: 380px;
+        background: url("/batik-pattern-corner.png") no-repeat center / contain;
+        opacity: 0.14;
+        pointer-events: none;
+      }
+      #batik-loader::before {
+        top: -70px;
+        left: -70px;
+      }
+      #batik-loader::after {
+        bottom: -70px;
+        right: -70px;
+        transform: rotate(180deg);
+      }
+
+      .batik-loader__inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 26px;
+      }
+
+      /* Spinning rings around the batik photo */
+      .batik-loader__ring {
+        position: relative;
+        width: 156px;
+        height: 156px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .batik-loader__ring::before {
+        content: "";
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #795b44;
+        border-right-color: #bba192;
+        animation: batik-spin 1.5s linear infinite;
+      }
+      .batik-loader__ring::after {
+        content: "";
+        position: absolute;
+        inset: -26px;
+        border-radius: 50%;
+        border: 1.5px dashed #ccc4b8;
+        animation: batik-spin-reverse 7s linear infinite;
+      }
+
+      .batik-loader__photo {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #fbf5f1;
+        box-shadow:
+          0 10px 26px rgba(88, 56, 34, 0.28),
+          0 0 0 4px #fdfcf9,
+          0 0 0 5px #e6d9c8;
+        animation: batik-pulse 2.4s ease-in-out infinite;
+      }
+      .batik-loader__photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 60% 42%;
+        transform: scale(1.8);
+        display: block;
+      }
+
+      .batik-loader__text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .batik-loader__title {
+        font-family: "Playfair Display", serif;
+        font-size: 19px;
+        font-weight: 600;
+        color: #583822;
+        letter-spacing: 0.4px;
+        text-align: center;
+      }
+      .batik-loader__dots span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin: 0 3px;
+        border-radius: 50%;
+        background: #9a7e6b;
+        animation: batik-dot 1.4s ease-in-out infinite;
+      }
+      .batik-loader__dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .batik-loader__dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      .batik-loader__bar {
+        width: 180px;
+        height: 4px;
+        border-radius: 4px;
+        background: #eee4da;
+        overflow: hidden;
+      }
+      .batik-loader__bar-fill {
+        width: 35%;
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #9a7e6b, #d4af37, #9a7e6b);
+        animation: batik-bar 1.3s ease-in-out infinite;
+      }
+
+      @keyframes batik-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes batik-spin-reverse {
+        to {
+          transform: rotate(-360deg);
+        }
+      }
+      @keyframes batik-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+      @keyframes batik-dot {
+        0%,
+        80%,
+        100% {
+          opacity: 0.25;
+          transform: translateY(0);
+        }
+        40% {
+          opacity: 1;
+          transform: translateY(-4px);
+        }
+      }
+      @keyframes batik-bar {
+        0% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(380%);
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- Splash loader: tampil instan saat page dibuka/reload, hilang otomatis saat app siap -->
+    <div id="batik-loader">
+      <div class="batik-loader__inner">
+        <div class="batik-loader__ring">
+          <div class="batik-loader__photo">
+            <img src="/batik-badan.png" alt="Motif batik" />
+          </div>
+        </div>
+        <div class="batik-loader__text">
+          <div class="batik-loader__title">Menenun Motif Batik</div>
+          <div class="batik-loader__dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="batik-loader__bar">
+          <div class="batik-loader__bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      (function () {
+        var loader = document.getElementById("batik-loader");
+        var root = document.getElementById("root");
+        var minDelay = 800; // ms minimum tampil, biar animasinya kelihatan
+        var start = Date.now();
+        var hidden = false;
+
+        function hideLoader() {
+          if (hidden) return;
+          hidden = true;
+          var elapsed = Date.now() - start;
+          var wait = Math.max(minDelay - elapsed, 0);
+          setTimeout(function () {
+            loader.classList.add("batik-loader--hidden");
+            setTimeout(function () {
+              if (loader.parentNode) loader.parentNode.removeChild(loader);
+            }, 650);
+          }, wait);
+        }
+
+        // Sembunyikan begitu React selesai render isi #root
+        var observer = new MutationObserver(function () {
+          if (root.childNodes.length > 0) {
+            hideLoader();
+            observer.disconnect();
+          }
+        });
+        observer.observe(root, { childList: true });
+
+        // Jaring pengaman kalau observer telat/gagal
+        window.addEventListener("load", function () {
+          setTimeout(hideLoader, 300);
+        });
+        setTimeout(hideLoader, 5000);
+      })();
+    </script>
   </body>
 </html>
