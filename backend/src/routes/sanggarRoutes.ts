@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', sanggarController.getAllSanggars);
 router.get('/me', authMiddleware, sanggarController.getMySanggar); // WAJIB sebelum '/:id'
+router.get('/rekomendasi', sanggarController.getRekomendasiSanggar); // WAJIB sebelum '/:id'
 router.get('/:id', sanggarController.getSanggarById);
 router.post('/', authMiddleware, authorizeRoles(['ADMIN']), sanggarController.createSanggar);
 router.put('/:id', authMiddleware, authorizeRoles(['ADMIN', 'SUPER_ADMIN']), sanggarController.updateSanggar);
