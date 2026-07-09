@@ -19,12 +19,14 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email  String   @unique @db.VarChar(50)
-  password  String
-  role      Role     @default(ADMIN)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  email          String    @unique @db.VarChar(50)
+  password       String
+  role           Role      @default(ADMIN)
+  resetOtp       String?   @db.VarChar(6)
+  resetOtpExpiry DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   sanggars  Sanggar[] // Sanggar yang dikelola Admin
   reviews   Review[]  // Review yang ditulis oleh User

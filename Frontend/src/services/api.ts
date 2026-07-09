@@ -43,6 +43,12 @@ export const authApi = {
   register: (data: { email: string; password: string; role?: string }) =>
     api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
+  forgotPassword: (data: { email: string }) =>
+    api.post('/auth/forgot-password', data),
+  verifyOtp: (data: { email: string; otp: string }) =>
+    api.post('/auth/verify-otp', data),
+  resetPassword: (data: { email: string; otp: string; newPassword: string }) =>
+    api.post('/auth/reset-password', data),
 };
 // CRUD User — untuk Super Admin kelola akun ADMIN & USER
 // CRUD User — untuk Super Admin kelola akun SUPER_ADMIN, ADMIN (sanggar), & USER

@@ -31,6 +31,7 @@ import ProtectedRoute from './ProtectedRoute';
 import ProdukList from '../pages/ProdukList/ProdukList';
 import SuperAdminKategoriPage from '../pages/superAdmin/Kategori';
 import SuperAdminRegionsPage from '../pages/superAdmin/Region';
+import ForgotPassword from '../pages/admin/ForgotPassword';
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
     children: [
       { path: 'login', element: <AdminLogin /> },
       { path: 'register', element: <AdminRegister /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
       {
         path: '',
         element: <ProtectedRoute allowedRoles={['ADMIN']} />,
