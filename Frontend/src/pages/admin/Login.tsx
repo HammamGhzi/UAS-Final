@@ -11,6 +11,10 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import type { LoginResponse } from "../../types/auth";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import type { AxiosError } from "axios";
+import {
+  LoginStatusOverlay,
+  ShakeWrapper,
+} from "../../components/UI/LoginStatusOverlay";
 
 const loginSchema = z.object({
   username: z
@@ -29,6 +33,10 @@ const AdminLogin = () => {
   const login = useAuthStore((state) => state.login);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [pendingResult, setPendingResult] = useState<LoginResponse | null>(null);
 
   const {
     register,
@@ -44,24 +52,13 @@ const AdminLogin = () => {
         email: data.username,
         password: data.password,
       });
-      return res.data.data as LoginResponse; // { token, user: { id, email, role } }
+      return res.data.data as LoginResponse;
     },
     onSuccess: (result) => {
       setError("");
       login({ user: result.user, token: result.token });
-
-      switch (result.user.role) {
-        case "SUPER_ADMIN":
-          navigate("/super-admin");
-          break;
-        case "ADMIN":
-          navigate("/admin-sanggar");
-          break;
-        case "USER":
-        default:
-          navigate("/");
-          break;
-      }
+      setPendingResult(result);
+      setShowSuccess(true);
     },
     onError: (err: AxiosError<ErrorResponse>) => {
       const msg =
@@ -69,8 +66,32 @@ const AdminLogin = () => {
         err.message ||
         "Email atau password salah.";
       setError(msg);
+      setShowErrorPopup(true);
+      setShakeKey((k) => k + 1);
     },
   });
+
+  const handleSuccessDone = () => {
+    setShowSuccess(false);
+    if (!pendingResult) return;
+
+    switch (pendingResult.user.role) {
+      case "SUPER_ADMIN":
+        navigate("/super-admin");
+        break;
+      case "ADMIN":
+        navigate("/admin-sanggar");
+        break;
+      case "USER":
+      default:
+        navigate("/");
+        break;
+    }
+  };
+
+  const handleErrorPopupDone = () => {
+    setShowErrorPopup(false);
+  };
 
   const onSubmit = (data: LoginForm) => {
     loginMutation.mutate(data);
@@ -105,7 +126,10 @@ const AdminLogin = () => {
 
           <div className="absolute left-1/2 top-14 h-9 w-9 -translate-x-1/2 rounded-full bg-[#9a6a3a] opacity-80" />
 
-          <div className="relative w-full max-w-[350px] overflow-hidden rounded-[28px] bg-[#fff7ef]/72 px-8 py-10 shadow-[0_24px_80px_rgba(88,56,34,0.18)] backdrop-blur-[7px] sm:px-9 sm:py-11">
+          <ShakeWrapper
+            triggerKey={shakeKey}
+            className="relative w-full max-w-[350px] overflow-hidden rounded-[28px] bg-[#fff7ef]/72 px-8 py-10 shadow-[0_24px_80px_rgba(88,56,34,0.18)] backdrop-blur-[7px] sm:px-9 sm:py-11"
+          >
             <img
               src="/login1.png"
               alt=""
@@ -174,12 +198,6 @@ const AdminLogin = () => {
                   </button>
                 </div>
 
-                {error && (
-                  <div className="rounded-lg border border-red-200 bg-red-50/90 px-4 py-2 text-sm text-red-600">
-                    {error}
-                  </div>
-                )}
-
                 <Button
                   type="submit"
                   variant="primary"
@@ -202,9 +220,25 @@ const AdminLogin = () => {
                 </button>
               </p>
             </div>
-          </div>
+          </ShakeWrapper>
         </section>
       </main>
+
+      <LoginStatusOverlay
+        show={showSuccess}
+        variant="success"
+        message="Login berhasil! Mengalihkan..."
+        onDone={handleSuccessDone}
+      />
+
+      <LoginStatusOverlay
+        show={showErrorPopup}
+        variant="error"
+        message="Login gagal"
+        subMessage={error}
+        duration={3000}
+        onDone={handleErrorPopupDone}
+      />
     </div>
   );
 };
