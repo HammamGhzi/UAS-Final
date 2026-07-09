@@ -1,86 +1,99 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Search, MapPin, MousePointer2, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { BatikPattern } from "../../assets/BatikPattern";
 import { SanggarCarousel } from "../../components/Sanggar/SanggarCarousel";
+import type { SanggarItem } from "../../components/Sanggar/SanggarCarousel";
 import { ProductCardHome } from "../../components/Product/ProductCardHome";
-import { DUMMY_PRODUCTS } from "../../data/dummyProducts";
+import { sanggarApi, productApi } from "../../services/api";
+import type { Produk } from "../../types";
+
+// Bentuk data persis seperti yang dibalikin getRekomendasiSanggar di backend
+type SanggarRekomendasi = {
+  id: number;
+  nama: string;
+  foto: string | null;
+  alamat: string;
+  wilayah: string;
+  rating: number;
+  jumlahReview: number;
+  jumlahProduk: number;
+};
+
+// Bentuk data persis seperti yang dibalikin getAllProducts di backend
+// (include: { sanggar: true, category: true, reviews: true })
+type BackendProduct = {
+  id: number;
+  sanggarId: number;
+  productName: string;
+  price: number | string;
+  image: string | null;
+  sanggar?: { id: number; name: string } | null;
+  category?: { id: number; categoryName: string } | null;
+  reviews: { quality: number; popularity: number; design: number }[];
+};
 
 const Home = () => {
   const navigate = useNavigate();
   const [wilayah, setWilayah] = useState("");
   const [jenisBatik, setJenisBatik] = useState("");
 
-const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
+  // Ambil produk terbaru dari backend (6 pertama) buat section "Temukan batik yang kamu suka"
+  const { data: featuredProducts = [] } = useQuery({
+    queryKey: ["produk-home"],
+    queryFn: async () => {
+      const res = await productApi.getAll();
+      const data = res.data.data as BackendProduct[];
+      return data.slice(0, 6).map((p): Produk => {
+        const jumlahReview = p.reviews.length;
+        const rating =
+          jumlahReview > 0
+            ? p.reviews.reduce(
+                (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
+                0
+              ) / jumlahReview
+            : 0;
 
-  const allSanggar = [
-    {
-      id: "1",
-      nama: "Rumah Batik Tegalan Maudy",
-      foto: "/batik 1.jpg ",
-      alamat: "Jl. Raya Tegal Barat No. 123",
-      wilayah: "Tegal Barat",
-      rating: 4.8,
-      jumlahReview: 128,
-      jumlahProduk: 45,
+        return {
+          id: String(p.id),
+          nama: p.productName,
+          harga: Number(p.price),
+          kategori: p.category?.categoryName || "",
+          motif: "",
+          jenisKain: "",
+          teknik: "",
+          foto: [p.image || "/batik 1.jpg"],
+          sanggarId: String(p.sanggarId),
+          rating: Number(rating.toFixed(1)),
+          jumlahReview,
+        };
+      });
     },
-    {
-      id: "2",
-      nama: "Batik Srikandi Tegal",
-      foto: "/batik 1.jpg",
-      alamat: "Jl. Pemuda No. 45",
-      wilayah: "Tegal Timur",
-      rating: 4.7,
-      jumlahReview: 96,
-      jumlahProduk: 38,
-    },
-    {
-      id: "3",
-      nama: "Sanggar Batik Nusantara",
-      foto: "/batik 1.jpg",
-      alamat: "Jl. Diponegoro No. 78",
-      wilayah: "Margadana",
-      rating: 4.9,
-      jumlahReview: 156,
-      jumlahProduk: 52,
-    },
-    {
-      id: "4",
-      nama: "Batik Indah Tegal",
-      foto: "/batik 1.jpg",
-      alamat: "Jl. Kartini No. 12",
-      wilayah: "Tegal Barat",
-      rating: 4.6,
-      jumlahReview: 84,
-      jumlahProduk: 31,
-    },
-    {
-      id: "5",
-      nama: "Sanggar Batik Pesisir",
-      foto: "/batik 1.jpg",
-      alamat: "Jl. Pantai No. 5",
-      wilayah: "Slawi",
-      rating: 4.5,
-      jumlahReview: 67,
-      jumlahProduk: 28,
-    },
-    {
-      id: "6",
-      nama: "Batik Keraton Tegal",
-      foto: "/batik 1.jpg",
-      alamat: "Jl. Sultan Agung No. 33",
-      wilayah: "Tegal Timur",
-      rating: 4.8,
-      jumlahReview: 112,
-      jumlahProduk: 41,
-    },
-  ];
+  });
 
-  // Nanti diganti hasil query backend: sort by rating desc, limit 5
-  const topSanggar = [...allSanggar]
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 5);
+  // Ambil sanggar rekomendasi dari backend (sudah urut by rating,
+  // atau acak kalau semua rating masih 0 — logikanya di backend)
+  const { data: topSanggar = [] } = useQuery({
+    queryKey: ["sanggar-rekomendasi"],
+    queryFn: async () => {
+      const res = await sanggarApi.getRekomendasi();
+      const data = res.data.data as SanggarRekomendasi[];
+      return data.map(
+        (s): SanggarItem => ({
+          id: String(s.id),
+          nama: s.nama,
+          foto: s.foto || "/batik 1.jpg",
+          alamat: s.alamat,
+          wilayah: s.wilayah,
+          rating: s.rating,
+          jumlahReview: s.jumlahReview,
+          jumlahProduk: s.jumlahProduk,
+        })
+      );
+    },
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +102,8 @@ const featuredProducts = DUMMY_PRODUCTS.slice(0, 6);
 
   return (
     <div className="bg-cream-100">
+      {/* Hero Section — full 1 layar (viewport minus navbar) */}
+      {/* ... sisa JSX di bawahnya SAMA PERSIS seperti yang sudah kamu punya, tidak perlu diubah ... */}
       {/* Hero Section — full 1 layar (viewport minus navbar) */}
       <section className="relative min-h-screen min-h-[100svh] min-h-[100dvh] flex flex-col justify-center px-4 py-[clamp(5.5rem,9vh,7rem)] overflow-hidden bg-[#f5ead8]">
         <div className="absolute inset-0 pointer-events-none" />

@@ -1,14 +1,15 @@
 import express from 'express';
-import * as reviewController from '../controllers/reviewController';
-import { authMiddleware } from '../middlewares/authMiddleware';
+import * as sanggarController from '../controllers/sanggarController';
+import { authMiddleware, authorizeRoles } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.get('/', reviewController.getAllReviews);
-router.get('/mine', authMiddleware, reviewController.getMyReviews); // WAJIB sebelum '/:id'
-router.get('/:id', reviewController.getReviewById);
-router.post('/', authMiddleware, reviewController.createReview);
-router.put('/:id', authMiddleware, reviewController.updateReview);
-router.delete('/:id', authMiddleware, reviewController.deleteReview);
+router.get('/', sanggarController.getAllSanggars);
+router.get('/me', authMiddleware, sanggarController.getMySanggar); // WAJIB sebelum '/:id'
+router.get('/rekomendasi', sanggarController.getRekomendasiSanggar); // WAJIB sebelum '/:id'
+router.get('/:id', sanggarController.getSanggarById);
+router.post('/', authMiddleware, authorizeRoles(['ADMIN']), sanggarController.createSanggar);
+router.put('/:id', authMiddleware, authorizeRoles(['ADMIN', 'SUPER_ADMIN']), sanggarController.updateSanggar);
+router.delete('/:id', authMiddleware, authorizeRoles(['SUPER_ADMIN']), sanggarController.deleteSanggar);
 
 export default router;
