@@ -1,15 +1,53 @@
 import { Boxes, MessageSquareText, Store, Users } from "lucide-react";
-import { adminList, customerList, produkList, reviewList, sanggarList } from "./data";
+import { useDashboardSummary } from "./useDashboardSummary";
 
-// TODO(backend): ganti angka-angka di bawah ini dengan hasil GET /super-admin/summary
-const totalUser = adminList.length + customerList.length;
-const totalProduk = produkList.length;
-const totalSanggar = sanggarList.length;
-const totalReview = reviewList.length;
-const avgRating =
-  sanggarList.reduce((sum, s) => sum + s.rating, 0) / (sanggarList.length || 1);
+// Avatar/foto placeholder dari inisial nama — dipakai kalau sanggar/reviewer
+// tidak punya foto (kolom image bisa null, dan Review/User memang tidak
+// menyimpan foto profil di skema saat ini).
+const getInitials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("");
+
+const AVATAR_COLORS = [
+  "bg-[#e9e6fb] text-[#7c6ee8]",
+  "bg-[#fdf0d8] text-[#e8a33d]",
+  "bg-[#d9f7e8] text-[#2fbf71]",
+  "bg-[#dceefe] text-[#3b9ae1]",
+  "bg-[#fde2e2] text-[#e15b5b]",
+];
+
+const colorForName = (name: string) => {
+  const index = name.charCodeAt(0) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+};
+
+const InitialAvatar = ({ name, className = "" }: { name: string; className?: string }) => (
+  <div
+    className={`flex items-center justify-center rounded-full font-bold ${colorForName(
+      name
+    )} ${className}`}
+  >
+    {getInitials(name) || "?"}
+  </div>
+);
 
 const SuperAdminDashboard = () => {
+  const { data, isPending, isError } = useDashboardSummary();
+
+  if (isPending) {
+    return <p className="text-sm text-[#777777]">Memuat data dashboard...</p>;
+  }
+
+  if (isError || !data) {
+    return <p className="text-sm text-red-500">Gagal mengambil data dashboard.</p>;
+  }
+
+  const { totals, newThisWeek, avgRating, topRatedProducts, recentReviews } = data;
+
   return (
     <div className="space-y-8">
       <div>
@@ -20,28 +58,28 @@ const SuperAdminDashboard = () => {
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total User"
-          value={totalUser}
-          trend="8.5% Up from yesterday"
+          value={totals.users}
+          trend={`+${newThisWeek.users} user baru minggu ini`}
           icon={<Users size={22} />}
           iconBg="bg-[#e9e6fb] text-[#7c6ee8]"
         />
         <StatCard
           title="Total Produk"
-          value={totalProduk}
-          trend="1.3% Up from past week"
+          value={totals.products}
+          trend={`+${newThisWeek.products} produk baru minggu ini`}
           icon={<Boxes size={22} />}
           iconBg="bg-[#fdf0d8] text-[#e8a33d]"
         />
         <StatCard
           title="Total Sanggar"
-          value={totalSanggar}
-          trend="1.3% Up from past week"
+          value={totals.sanggars}
+          trend={`+${newThisWeek.sanggars} sanggar baru minggu ini`}
           icon={<Store size={22} />}
           iconBg="bg-[#d9f7e8] text-[#2fbf71]"
         />
         <StatCard
           title="Total Review"
-          value={totalReview}
+          value={totals.reviews}
           trend={`Rata-rata rating ${avgRating.toFixed(1)}`}
           icon={<MessageSquareText size={22} />}
           iconBg="bg-[#dceefe] text-[#3b9ae1]"
@@ -51,49 +89,58 @@ const SuperAdminDashboard = () => {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-[24px] border border-[#d0d0d0] bg-white px-7 py-6">
-          <h2 className="text-lg font-extrabold text-[#2f2f2f]">Sanggar dengan rating tertinggi</h2>
+          <h2 className="text-lg font-extrabold text-[#2f2f2f]">Produk dengan rating tertinggi</h2>
           <div className="mt-4 space-y-4">
-            {[...sanggarList]
-              .sort((a, b) => b.rating - a.rating)
-              .slice(0, 5)
-              .map((sanggar) => (
-                <div key={sanggar.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+            {topRatedProducts.length === 0 && (
+              <p className="text-sm text-[#8a8a8a]">Belum ada produk dengan review.</p>
+            )}
+            {topRatedProducts.map((product) => (
+              <div key={product.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {product.image ? (
                     <img
-                      src={sanggar.foto}
-                      alt={sanggar.nama}
+                      src={product.image}
+                      alt={product.name}
                       className="h-10 w-10 rounded-xl object-cover"
                     />
-                    <div>
-                      <p className="text-sm font-bold text-[#333333]">{sanggar.nama}</p>
-                      <p className="text-xs text-[#8a8a8a]">{sanggar.wilayah}</p>
-                    </div>
+                  ) : (
+                    <InitialAvatar name={product.name} className="h-10 w-10 rounded-xl text-sm" />
+                  )}
+                  <div>
+                    <p className="text-sm font-bold text-[#333333]">{product.name}</p>
+                    <p className="text-xs text-[#8a8a8a]">{product.sanggarName}</p>
                   </div>
-                  <span className="text-sm font-bold text-[#ff9800]">
-                    {sanggar.rating.toFixed(1)} ★
-                  </span>
                 </div>
-              ))}
+                <span className="text-sm font-bold text-[#ff9800]">
+                  {product.avgRating.toFixed(1)} ★
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="rounded-[24px] border border-[#d0d0d0] bg-white px-7 py-6">
           <h2 className="text-lg font-extrabold text-[#2f2f2f]">Review terbaru</h2>
           <div className="mt-4 space-y-4">
-            {reviewList.slice(0, 5).map((review) => (
+            {recentReviews.length === 0 && (
+              <p className="text-sm text-[#8a8a8a]">Belum ada review masuk.</p>
+            )}
+            {recentReviews.map((review) => (
               <div key={review.id} className="flex items-start gap-3">
-                <img src={review.avatar} alt={review.nama} className="h-9 w-9 rounded-full" />
+                <InitialAvatar name={review.reviewerName} className="h-9 w-9 shrink-0 text-xs" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-[#333333]">
-                    {review.nama}{" "}
+                    {review.reviewerName}{" "}
                     <span className="font-normal text-[#8a8a8a]">
-                      &middot; {review.jenis} &middot; {review.target}
+                      &middot; Produk &middot; {review.productName} ({review.sanggarName})
                     </span>
                   </p>
-                  <p className="mt-1 line-clamp-1 text-sm text-[#777777]">{review.komentar}</p>
+                  <p className="mt-1 line-clamp-1 text-sm text-[#777777]">
+                    {review.comment || "Tidak ada komentar."}
+                  </p>
                 </div>
                 <span className="shrink-0 text-xs font-bold text-[#ff9800]">
-                  {review.rating}.0 ★
+                  {review.rating.toFixed(1)} ★
                 </span>
               </div>
             ))}

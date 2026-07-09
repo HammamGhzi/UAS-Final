@@ -131,4 +131,9 @@ export const productApi = {
 export const myReviewApi = {
   getMine: () => api.get('/reviews/mine'),
 };
+
+// Dashboard Super Admin — konek ke dashboardController.ts backend
+export const dashboardApi = {
+  getSummary: () => api.get('/dashboard/summary'),
+};
 export default api;
