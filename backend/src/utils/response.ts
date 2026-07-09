@@ -5,5 +5,8 @@ export function success<T = unknown>(res: Response, data: T, message = 'Success'
 }
 
 export function error(res: Response, message = 'Internal server error', status = 500) {
+  if (status >= 500) {
+    console.error('[ERROR]', message);
+  }
   return res.status(status).json({ status: 'error', message });
 }

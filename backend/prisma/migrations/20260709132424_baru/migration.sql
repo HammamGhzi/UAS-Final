@@ -34,7 +34,7 @@ CREATE TABLE `sanggars` (
     `longitude` DECIMAL(11, 8) NOT NULL,
     `phone` VARCHAR(20) NULL,
     `description` TEXT NULL,
-    `image` VARCHAR(255) NULL,
+    `image` LONGTEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -62,7 +62,7 @@ CREATE TABLE `products` (
     `price` DECIMAL(12, 0) NOT NULL,
     `stock` INTEGER NOT NULL DEFAULT 0,
     `description` TEXT NULL,
-    `image` VARCHAR(255) NULL,
+    `image` LONGTEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
