@@ -47,19 +47,19 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return error(res, 'Invalid credentials', 401);
+      return error(res, 'Email Tidak Terdaftar', 401);
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return error(res, 'Invalid credentials', 401);
+      return error(res, 'Password salah', 401);
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
       expiresIn: '8h',
     });
 
-    return success(res, { token, user: { id: user.id, email: user.email, role: user.role } }, 'Login successful');
+    return success(res, { token, user: { id: user.id, email: user.email, role: user.role } }, 'Login sukses ');
   } catch (err) {
     return error(res, (err as Error).message || 'Login gagal', 500);
   }
