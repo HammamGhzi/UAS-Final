@@ -190,8 +190,9 @@ const AdminLogin = () => {
                 </div>
 
                 <div className="text-right">
-                  <button
+                 <button
                     type="button"
+                    onClick={() => navigate("/form/forgot-password")}
                     className="text-xs font-medium text-[#bd6b16] transition hover:text-[#8b4b10]"
                   >
                     Lupa Sandi?
