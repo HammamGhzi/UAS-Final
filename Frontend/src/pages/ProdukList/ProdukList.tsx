@@ -39,30 +39,40 @@ const hitungRating = (reviews: BackendReview[]) => {
 const ProductCard = ({ produk }: { produk: BackendProduct }) => {
   const rating = hitungRating(produk.reviews);
   return (
-    <Link to={`/produk/${produk.id}`}>
-      <div className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-brown-200 hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-        <div className="h-32 sm:h-36 overflow-hidden bg-brown-100 relative">
+    <Link to={`/produk/${produk.id}`} className="block h-full">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_4px_18px_rgba(67,47,39,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(67,47,39,0.16)]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-brown-100">
           <img
             src={produk.image || '/batik 1.jpg'}
             alt={produk.productName}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
           {produk.category && (
-            <span className="absolute top-2 left-2 bg-[#432f27]/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#432f27] shadow-sm backdrop-blur-sm">
               {produk.category.categoryName}
             </span>
           )}
         </div>
-        <div className="p-2.5 flex flex-col flex-1">
-          <h3 className="font-serif font-bold text-brown-900 text-sm mb-1 line-clamp-1">
+
+        <div className="flex flex-1 flex-col gap-2 p-4">
+          <h3 className="font-serif text-base font-bold leading-snug text-brown-900 line-clamp-1">
             {produk.productName}
           </h3>
-          <div className="flex items-center gap-1 mb-1">
-            <Star size={12} className="fill-[#b08d28] text-[#b08d28]" />
-            <span className="text-xs text-brown-700">{rating.toFixed(1)}</span>
-            <span className="text-[11px] text-brown-500">({produk.reviews.length})</span>
+
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 rounded-full bg-[#fdf3e0] px-2 py-0.5">
+              <Star size={12} className="fill-[#b08d28] text-[#b08d28]" />
+              <span className="text-xs font-semibold text-[#8a6c1f]">
+                {rating.toFixed(1)}
+              </span>
+            </div>
+            <span className="text-xs text-brown-500">
+              ({produk.reviews.length} ulasan)
+            </span>
           </div>
-          <p className="text-[#b08d28] font-bold text-sm mt-auto">
+
+          <p className="mt-auto pt-1 text-lg font-extrabold text-[#432f27]">
             {formatPrice(Number(produk.price))}
           </p>
         </div>
