@@ -52,7 +52,7 @@ const Home = () => {
           jumlahReview > 0
             ? p.reviews.reduce(
                 (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
-                0
+                0,
               ) / jumlahReview
             : 0;
 
@@ -90,7 +90,7 @@ const Home = () => {
           rating: s.rating,
           jumlahReview: s.jumlahReview,
           jumlahProduk: s.jumlahProduk,
-        })
+        }),
       );
     },
   });
@@ -242,8 +242,7 @@ const Home = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.35, duration: 0.4 }}
             className="text-center mt-12 sm:mt-14 px-4"
-          >
-          </motion.div>
+          ></motion.div>
         </div>
       </section>
 
@@ -268,7 +267,8 @@ const Home = () => {
                     Selamat Datang Di Website Batik Tegal
                   </h3>
                   <p className="text-brown-800/90 mb-6 text-sm leading-relaxed">
-                    Dapatkan  batik yang anda ingin terdekat dengan kualitas terbaik khas tegal
+                    Dapatkan batik yang anda ingin terdekat dengan kualitas
+                    terbaik khas tegal
                   </p>
                 </div>
               </div>
@@ -304,55 +304,37 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Tentang Section */}
-      <section id="tentang-canting" className="py-16 px-4 bg-[#f5ead8]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-serif font-bold text-brown-900 mb-4">
-            Tentang Canting
-          </h2>
-          <p className="text-brown-700 leading-relaxed">
-            CANTING adalah platform digital yang menghadirkan pengalaman terbaik
-            dalam menemukan dan membeli Batik Tegalan asli. Kami bekerja sama
-            dengan sanggar-sanggar batik terpercaya di Tegal untuk memastikan
-            kualitas dan keaslian setiap produk yang ditawarkan.
-          </p>
+      {/* Products Section */}
+      <section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
+              Temukan batik yang kamu suka
+            </h2>
+            <p className="text-brown-600 text-sm">
+              Produk batik pilihan dari sanggar-sanggar terpercaya di Tegal
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-5">
+            {featuredProducts.map((produk) => (
+              <motion.div key={produk.id} whileHover={{ scale: 1.02 }}>
+                <ProductCardHome produk={produk} />
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <button
+              type="button"
+              onClick={() => navigate("/produk")}
+              className="px-8 py-3 bg-[#432f27] text-white rounded-2xl text-sm font-semibold hover:bg-black transition-colors"
+            >
+              Lihat Semua Produk
+            </button>
+          </div>
         </div>
       </section>
-
-    {/* Products Section */}
-<section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
-  <div className="max-w-6xl mx-auto">
-    <div className="text-center mb-12">
-      <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
-        Temukan batik yang kamu suka
-      </h2>
-      <p className="text-brown-600 text-sm">
-        Produk batik pilihan dari sanggar-sanggar terpercaya di Tegal
-      </p>
-    </div>
-
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-5">
-      {featuredProducts.map((produk) => (
-        <motion.div
-          key={produk.id}
-          whileHover={{ scale: 1.02 }}
-        >
-          <ProductCardHome produk={produk} />
-        </motion.div>
-      ))}
-    </div>
-
-    <div className="text-center mt-12">
-      <button
-        type="button"
-        onClick={() => navigate("/produk")}
-        className="px-8 py-3 bg-[#432f27] text-white rounded-2xl text-sm font-semibold hover:bg-black transition-colors"
-      >
-        Lihat Semua Produk
-      </button>
-    </div>
-  </div>
-</section>
 
       {/* Tentang Section */}
       <section id="tentang-section" className="py-20 px-4 bg-[#f5ead8]">
@@ -375,7 +357,13 @@ const Home = () => {
                 pecinta batik di seluruh Indonesia.
               </p>
             </div>
-            <div className="bg-[#ddd8ce] rounded-3xl aspect-[4/3] w-full" />
+            <div className="bg-[#ddd8ce] rounded-3xl aspect-[4/3] w-full overflow-hidden">
+              <img
+                src="about.png"
+                alt="Tentang CANTING"
+                className="h-full w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
