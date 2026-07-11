@@ -151,7 +151,7 @@ model WeightHistory {
 // Tabel Sesi Pencarian SPK (Sangat Penting)
 model SpkSession {
   sessionId       String   @id @db.VarChar(100)
-  userId          Int
+  userId          Int?
   regionId        Int?
   categoryId      Int?
   minPrice        Decimal  @default(0) @db.Decimal(12, 0)

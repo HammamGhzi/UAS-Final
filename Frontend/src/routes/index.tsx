@@ -33,6 +33,7 @@ import SuperAdminKategoriPage from '../pages/superAdmin/Kategori';
 import SuperAdminRegionsPage from '../pages/superAdmin/Region';
 import ForgotPassword from '../pages/admin/ForgotPassword';
 
+
 export const router = createBrowserRouter([
   {
     path: '/',

@@ -40,14 +40,13 @@ const Home = () => {
   const [wilayah, setWilayah] = useState("");
   const [jenisBatik, setJenisBatik] = useState("");
 
-  // Ambil produk dengan rating tertinggi dari backend (top 6) buat section "Temukan batik yang kamu suka"
+  // Ambil produk terbaru dari backend (6 pertama) buat section "Temukan batik yang kamu suka"
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["produk-home"],
     queryFn: async () => {
       const res = await productApi.getAll();
       const data = res.data.data as BackendProduct[];
-
-      const mapped = data.map((p): Produk => {
+      return data.slice(0, 6).map((p): Produk => {
         const jumlahReview = p.reviews.length;
         const rating =
           jumlahReview > 0
@@ -71,15 +70,6 @@ const Home = () => {
           jumlahReview,
         };
       });
-
-      // Urutkan dari rating tertinggi ke terendah, lalu ambil 6 teratas.
-      // Kalau rating sama, produk dengan jumlah ulasan lebih banyak diprioritaskan.
-      return [...mapped]
-        .sort((a, b) => {
-          if (b.rating !== a.rating) return b.rating - a.rating;
-          return b.jumlahReview - a.jumlahReview;
-        })
-        .slice(0, 6);
     },
   });
 
