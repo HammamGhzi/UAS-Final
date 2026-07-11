@@ -61,33 +61,41 @@ const Home = () => {
   // Ambil produk terbaru dari backend (6 pertama) buat section "Temukan batik yang kamu suka"
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["produk-home"],
+    staleTime: 0, // selalu refetch saat halaman dikunjungi ulang
     queryFn: async () => {
       const res = await productApi.getAll();
       const data = res.data.data as BackendProduct[];
-      return data.slice(0, 6).map((p): Produk => {
-        const jumlahReview = p.reviews.length;
-        const rating =
-          jumlahReview > 0
-            ? p.reviews.reduce(
-                (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
-                0,
-              ) / jumlahReview
-            : 0;
 
-        return {
-          id: String(p.id),
-          nama: p.productName,
-          harga: Number(p.price),
-          kategori: p.category?.categoryName || "",
-          motif: "",
-          jenisKain: "",
-          teknik: "",
-          foto: [p.image || "/batik 1.jpg"],
-          sanggarId: String(p.sanggarId),
-          rating: Number(rating.toFixed(1)),
-          jumlahReview,
-        };
-      });
+      // Hitung rating dulu untuk semua produk, lalu sort by rating tertinggi,
+      // baru ambil 6 teratas untuk ditampilkan di homepage
+      return data
+        .map((p): Produk => {
+          const jumlahReview = p.reviews.length;
+          const rating =
+            jumlahReview > 0
+              ? p.reviews.reduce(
+                  (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
+                  0,
+                ) / jumlahReview
+              : 0;
+
+          return {
+            id: String(p.id),
+            nama: p.productName,
+            harga: Number(p.price),
+            kategori: p.category?.categoryName || "",
+            motif: "",
+            jenisKain: "",
+            teknik: "",
+            foto: [p.image || "/batik 1.jpg"],
+            sanggarId: String(p.sanggarId),
+            rating: Number(rating.toFixed(1)),
+            jumlahReview,
+          };
+        })
+        .filter((p) => p.jumlahReview > 0) // hanya tampilkan yang sudah ada rating
+        .sort((a, b) => b.rating - a.rating) // urutkan rating tertinggi dulu
+        .slice(0, 6);
     },
   });
 

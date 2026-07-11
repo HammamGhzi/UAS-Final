@@ -108,6 +108,9 @@ const ProductDetail = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const REVIEWS_LIMIT = 6;
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const {
@@ -434,7 +437,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="grid gap-x-24 gap-y-10 md:grid-cols-2">
-              {reviews.map((review) => (
+              {(showAllReviews ? reviews : reviews.slice(0, REVIEWS_LIMIT)).map((review) => (
                 <article key={review.id}>
                   <div className="mb-4 flex items-center gap-4">
                     <Avatar name={review.reviewerName} />
@@ -442,6 +445,7 @@ const ProductDetail = () => {
                       <p className="font-semibold">{review.reviewerName}</p>
                       <p className="text-xs text-[#7b756b]">
                         {new Date(review.createdAt).toLocaleDateString('id-ID', {
+                          day: 'numeric',
                           month: 'long',
                           year: 'numeric',
                         })}
@@ -452,6 +456,16 @@ const ProductDetail = () => {
                 </article>
               ))}
             </div>
+
+            {reviews.length > REVIEWS_LIMIT && (
+              <button
+                type="button"
+                onClick={() => setShowAllReviews((prev) => !prev)}
+                className="mt-8 underline text-sm font-semibold text-[#432f27] hover:text-black transition-colors"
+              >
+                {showAllReviews ? 'Sembunyikan ulasan' : `Lihat semua ${reviews.length} ulasan`}
+              </button>
+            )}
           </>
         ) : (
           <p className="text-sm text-[#7b756b]">Belum ada ulasan untuk produk ini. Jadilah yang pertama!</p>

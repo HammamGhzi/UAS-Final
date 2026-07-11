@@ -70,7 +70,7 @@ const toPayload = (values: ProductFormValues) => ({
 });
 
 export const getProducts = async (sanggarId: number): Promise<ProductRecord[]> => {
-  const res = await productApi.getAll(sanggarId);
+  const res = await productApi.getAll({ sanggarId });
   const body: ApiEnvelope<ProductRecord[]> = res.data;
   // Backend field price adalah Decimal (kembali sebagai string dari Prisma+JSON), pastikan jadi number
   return (body.data ?? []).map((p) => ({ ...p, price: Number(p.price) }));
