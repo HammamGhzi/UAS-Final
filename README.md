@@ -6,24 +6,25 @@ CANTING adalah platform web untuk mencari dan merekomendasikan batik Tegalan ter
 
 ## 📋 Daftar Isi
 
-- [Fitur Utama](#fitur-utama)
-- [Teknologi](#teknologi)
-- [Struktur Project](#struktur-project)
-- [Cara Menjalankan](#cara-menjalankan)
-- [Penjelasan Database](#penjelasan-database)
-- [Penjelasan SPK TOPSIS](#penjelasan-spk-topsis)
-- [API Endpoints](#api-endpoints)
-- [Peran Pengguna](#peran-pengguna)
+- [Fitur Utama](#-fitur-utama)
+- [Teknologi](#️-teknologi)
+- [Struktur Project](#-struktur-project)
+- [Cara Menjalankan](#-cara-menjalankan)
+- [Penjelasan Database](#️-penjelasan-database)
+- [Penjelasan SPK TOPSIS](#-penjelasan-spk-topsis)
+- [API Endpoints](#-api-endpoints)
+- [Peran Pengguna](#-peran-pengguna)
+- [Halaman Aplikasi](#-halaman-aplikasi)
 
 ---
 
 ## ✨ Fitur Utama
 
-- 🔍 **Pencarian Produk Batik** — filter berdasarkan wilayah, kategori, dan rentang harga
-- 🤖 **Rekomendasi SPK TOPSIS** — ranking produk batik terbaik berdasarkan bobot kriteria yang dipilih user
-- 📍 **Berbasis Lokasi** — menghitung jarak user ke sanggar menggunakan rumus Haversine
-- 🗺️ **Peta Interaktif** — menampilkan titik lokasi semua sanggar terdaftar
-- ⭐ **Sistem Ulasan & Rating** — user dapat memberikan rating kualitas, popularitas, dan desain
+- 🔍 **Pencarian Produk Batik** — filter berdasarkan wilayah, kategori batik, dan rentang harga
+- 🤖 **Rekomendasi SPK TOPSIS** — ranking produk batik terbaik berdasarkan bobot kriteria yang dipilih user secara dinamis
+- 📍 **Berbasis Lokasi** — menghitung jarak user ke sanggar secara real-time menggunakan rumus Haversine
+- 🗺️ **Peta Interaktif** — menampilkan titik lokasi semua sanggar terdaftar menggunakan Leaflet OpenStreetMap
+- ⭐ **Sistem Ulasan & Rating** — user dapat memberikan rating kualitas, popularitas, dan desain produk
 - 👤 **Multi Role** — Super Admin, Admin Sanggar, dan User biasa
 - 🔐 **Autentikasi JWT** — login, register, lupa password dengan OTP via email
 - 📱 **Responsive** — dapat diakses dari HP, tablet, dan desktop
@@ -69,49 +70,47 @@ CANTING adalah platform web untuk mencari dan merekomendasikan batik Tegalan ter
 
 ```
 uassss/
-├── Frontend/                  # Aplikasi React
-│   ├── public/                # Asset statis (gambar, icon)
-│   ├── src/
-│   │   ├── assets/            # Asset komponen (SVG, pattern)
-│   │   ├── components/        # Komponen reusable
-│   │   │   ├── layouts/       # Layout (Navbar, Footer, Sidebar)
-│   │   │   ├── UI/            # Komponen UI dasar (Button, Card, Input)
-│   │   │   ├── Map/           # Komponen peta Leaflet
-│   │   │   ├── Product/       # Card produk
-│   │   │   └── Sanggar/       # Card & carousel sanggar
-│   │   ├── pages/             # Halaman-halaman aplikasi
-│   │   │   ├── Home/          # Landing page
-│   │   │   ├── Katalog/       # Katalog produk + SPK TOPSIS
-│   │   │   ├── ProductDetail/ # Detail produk & ulasan
-│   │   │   ├── SanggarDetail/ # Detail sanggar
-│   │   │   ├── ProdukList/    # Daftar semua produk
-│   │   │   ├── RecommendationResult/ # Hasil ranking TOPSIS
-│   │   │   ├── Form/         # Login, Register, Forgot Password
-│   │   │   ├── adminSanggar/  # Dashboard Admin Sanggar
-│   │   │   └── superAdmin/    # Dashboard Super Admin
-│   │   ├── services/          # API calls (axios)
-│   │   ├── stores/            # Zustand store (auth)
-│   │   ├── types/             # TypeScript types
-│   │   ├── hooks/             # Custom hooks
-│   │   └── routes/            # Routing & Protected Route
-│   ├── .env                   # Variabel environment frontend
-│   ├── vite.config.ts
-│   └── package.json
+├── Frontend/                        # Aplikasi React + TypeScript
+│   ├── public/                      # Asset statis (gambar, icon)
+│   └── src/
+│       ├── assets/                  # SVG, pattern batik
+│       ├── components/
+│       │   ├── layouts/             # MainLayout, AdminSanggarLayout, SuperAdminLayout, AuthLayout
+│       │   ├── UI/                  # Button, Card, Input, Select
+│       │   ├── Map/                 # MapComponent (detail), SanggarMap (katalog)
+│       │   ├── Product/             # ProductCard, ProductCardHome
+│       │   └── Sanggar/             # SanggarCard, SanggarCarousel
+│       ├── pages/
+│       │   ├── Home/                # Landing page
+│       │   ├── Katalog/             # Katalog produk + SPK TOPSIS
+│       │   ├── ProductDetail/       # Detail produk & ulasan
+│       │   ├── SanggarDetail/       # Detail sanggar & produknya
+│       │   ├── ProdukList/          # Semua produk
+│       │   ├── RecommendationResult/# Hasil ranking TOPSIS
+│       │   ├── form/               # Login, Register, Forgot Password
+│       │   ├── adminSanggar/        # Dashboard Admin Sanggar (produk, ulasan, settings)
+│       │   └── superAdmin/          # Dashboard Super Admin (pengguna, sanggar, wilayah, kategori, produk)
+│       ├── services/                # api.ts — semua axios API calls
+│       ├── stores/                  # useAuthStore (Zustand)
+│       ├── types/                   # TypeScript types
+│       ├── hooks/                   # Custom hooks
+│       └── routes/                  # index.tsx + ProtectedRoute
 │
-├── backend/                   # API Server Express
+├── backend/                         # API Server Express + TypeScript
 │   ├── src/
-│   │   ├── config/            # Konfigurasi Prisma
-│   │   ├── controllers/       # Logic request handler
-│   │   ├── routes/            # Definisi endpoint API
-│   │   ├── services/          # Business logic (TOPSIS, SPK)
-│   │   ├── middlewares/       # Auth middleware (JWT)
-│   │   └── utils/             # Helper (response, mailer)
-│   ├── prisma/
-│   │   ├── schema.prisma      # Definisi model database
-│   │   ├── seed.ts            # Data awal database
-│   │   └── migrations/        # History migrasi database
-│   ├── .env                   # Variabel environment backend
-│   └── package.json
+│   │   ├── config/                  # prisma.ts
+│   │   ├── controllers/             # auth, user, product, sanggar, review, region,
+│   │   │                            # batikCategory, criteria, recommendation,
+│   │   │                            # spkSession, weightHistory, dashboard
+│   │   ├── routes/                  # route definitions (sama dengan controller)
+│   │   ├── services/                # recommendationService, spkSessionService,
+│   │   │                            # weightingService, authService
+│   │   ├── middlewares/             # authMiddleware (JWT verify)
+│   │   └── utils/                   # response.ts, mailer.ts
+│   └── prisma/
+│       ├── schema.prisma            # Model database
+│       ├── seed.ts                  # Data awal
+│       └── migrations/              # History migrasi
 │
 └── README.md
 ```
@@ -125,7 +124,7 @@ uassss/
 - MySQL / MariaDB
 - npm
 
-### 1. Clone & Setup Database
+### 1. Setup Database
 
 Import file SQL ke MySQL/phpMyAdmin:
 ```
@@ -136,15 +135,10 @@ batiktegal.sql
 
 ```bash
 cd backend
-
-# Install dependencies
 npm install
-
-# Buat file .env
-cp .env.example .env
 ```
 
-Isi file `backend/.env`:
+Buat file `backend/.env`:
 ```env
 DATABASE_URL="mysql://root:@localhost:3306/batiktegal"
 JWT_SECRET="your_jwt_secret_key"
@@ -157,7 +151,7 @@ EMAIL_PASS="app_password_gmail"
 # Generate Prisma client
 npm run prisma:generate
 
-# Jalankan backend
+# Jalankan backend (development)
 npm run dev
 ```
 
@@ -167,20 +161,15 @@ Backend berjalan di: `http://localhost:3000`
 
 ```bash
 cd Frontend
-
-# Install dependencies
 npm install
-
-# Buat file .env
 ```
 
-Isi file `Frontend/.env`:
+Buat file `Frontend/.env`:
 ```env
 VITE_API_URL=http://localhost:3000/api
 ```
 
 ```bash
-# Jalankan frontend
 npm run dev
 ```
 
@@ -196,72 +185,78 @@ Database: **batiktegal** (MySQL/MariaDB)
 
 | Tabel | Fungsi |
 |---|---|
-| `users` | Data pengguna (Super Admin, Admin, User) |
-| `regions` | Wilayah kecamatan di Kota Tegal |
-| `sanggars` | Data sanggar batik (nama, alamat, koordinat) |
-| `batik_categories` | Kategori batik (Pesisiran, Pedalaman, Kontemporer) |
-| `products` | Produk batik di tiap sanggar |
-| `reviews` | Ulasan produk (kualitas, popularitas, desain) |
-| `criterias` | Kriteria SPK TOPSIS |
-| `weight_histories` | Riwayat bobot kriteria yang dipilih user |
-| `spk_sessions` | Sesi pencarian SPK per user |
+| `users` | Data pengguna — role: SUPER_ADMIN, ADMIN, USER |
+| `regions` | Wilayah kecamatan di Kota Tegal (Tegal Barat, Timur, Selatan, Margadana) |
+| `sanggars` | Data sanggar batik — nama, alamat, koordinat (lat/lon), relasi ke region & admin |
+| `batik_categories` | Kategori batik (Gaya Pesisiran, Pedalaman, Kontemporer) |
+| `products` | Produk batik — harga, stok, deskripsi, gambar (base64), relasi ke sanggar & kategori |
+| `reviews` | Ulasan produk — quality, popularity, design (1-5), komentar |
+| `criterias` | Kriteria SPK TOPSIS (Harga, Jarak, Kualitas, Popularitas, Desain) |
+| `weight_histories` | Riwayat bobot kriteria yang dipilih user tiap sesi SPK |
+| `spk_sessions` | Sesi SPK — lokasi user, filter wilayah/kategori/harga, relasi ke weight_history |
 
 ### View SQL TOPSIS
 
-View dibuat manual di database untuk perhitungan TOPSIS:
+View dibuat manual di database, diquery berantai untuk perhitungan TOPSIS:
 
 | View | Fungsi |
 |---|---|
-| `v_topsis_base` | Data mentah produk + hitung jarak Haversine + avg review |
-| `v_topsis_pembagi` | Hitung √(Σx²) per kriteria untuk normalisasi |
-| `v_topsis_norm_terbobot` | Normalisasi × bobot = xij / √(Σxij²) × wj |
-| `v_topsis_ideal` | Solusi ideal positif (A+) dan negatif (A-) |
-| `v_topsis_jarak` | Jarak D+ ke A+ dan D- ke A- |
-| `v_topsis_hasil` | Skor preferensi = D- / (D+ + D-) |
+| `v_topsis_base` | Data mentah produk + jarak Haversine + rata-rata review per produk per session |
+| `v_topsis_pembagi` | Hitung √(Σx²) per kriteria per session — untuk normalisasi vektor |
+| `v_topsis_norm_terbobot` | Normalisasi × bobot: `xij / √(Σxij²) × wj` |
+| `v_topsis_ideal` | Solusi ideal positif (A+) dan negatif (A-) per session |
+| `v_topsis_jarak` | D+ = jarak ke A+, D- = jarak ke A- per produk |
+| `v_topsis_hasil` | Skor preferensi akhir: `D- / (D+ + D-)`, range 0–1 |
 
 ---
 
 ## 📊 Penjelasan SPK TOPSIS
 
-TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) digunakan untuk meranking produk batik terbaik.
+TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) digunakan untuk meranking produk batik terbaik. **TOPSIS bukan filter** — semua produk yang lolos klasifikasi awal tetap masuk perhitungan dan diranking berdasarkan skor.
 
 ### 5 Kriteria
 
 | Kode | Kriteria | Atribut | Sumber Data |
 |---|---|---|---|
-| C1 | Harga | Cost (makin murah makin baik) | `products.price` |
-| C2 | Jarak | Cost (makin dekat makin baik) | Haversine(userLat, userLon, sanggar.lat, sanggar.lon) |
-| C3 | Kualitas | Benefit (makin tinggi makin baik) | AVG(reviews.quality) |
-| C4 | Popularitas | Benefit | AVG(reviews.popularity) |
-| C5 | Desain | Benefit | AVG(reviews.design) |
+| C1 | Harga | **Cost** — makin murah makin baik | `products.price` |
+| C2 | Jarak | **Cost** — makin dekat makin baik | Haversine(userLat, userLon, sanggar.lat, sanggar.lon) |
+| C3 | Kualitas | **Benefit** — makin tinggi makin baik | AVG(reviews.quality) |
+| C4 | Popularitas | **Benefit** | AVG(reviews.popularity) |
+| C5 | Desain | **Benefit** | AVG(reviews.design) |
 
-### Alur Perhitungan
+### Alur Lengkap
 
 ```
-1. User pilih kriteria di dropdown Katalog
+1. User pilih kriteria di 2 dropdown Katalog
         ↓
-2. Backend buat bobot: kriteria dipilih = 5, lainnya = 1
+2. POST /api/weight-histories
+   → kriteria dipilih = bobot 5, lainnya = bobot 1
    → disimpan ke tabel weight_histories
         ↓
-3. Backend buat spk_session (lokasi user + bobot + filter)
+3. POST /api/recommendations/run
+   → simpan spk_sessions (lokasi user GPS, filter, weightHistoryId)
         ↓
 4. Query view SQL berantai:
-   v_topsis_base → v_topsis_pembagi → v_topsis_norm_terbobot
-   → v_topsis_ideal → v_topsis_jarak → v_topsis_hasil
+   v_topsis_base
+     → v_topsis_pembagi
+       → v_topsis_norm_terbobot
+         → v_topsis_ideal
+           → v_topsis_jarak
+             → v_topsis_hasil
         ↓
-5. Return hasil dengan skor 0-1, diurutkan dari tertinggi
+5. Return hasil terurut ranking 1 = skor tertinggi (terbaik)
 ```
 
 ### Rumus TOPSIS
 
 ```
-Normalisasi  : rij = xij / √(Σxij²)
-Terbobot     : vij = wj × rij
-Ideal A+     : max(vij) untuk Benefit, min(vij) untuk Cost
-Ideal A-     : min(vij) untuk Benefit, max(vij) untuk Cost
+Normalisasi  : rij  = xij / √(Σxij²)
+Terbobot     : vij  = wj × rij
+Ideal A+     : max(vij) untuk Benefit,  min(vij) untuk Cost
+Ideal A-     : min(vij) untuk Benefit,  max(vij) untuk Cost
 Jarak D+     : √Σ(vij - A+j)²
 Jarak D-     : √Σ(vij - A-j)²
-Skor         : Ci = D-i / (D+i + D-i)   → range 0 sampai 1
+Skor         : Ci   = D-i / (D+i + D-i)   →  range 0 sampai 1
 ```
 
 ---
@@ -270,27 +265,47 @@ Skor         : Ci = D-i / (D+i + D-i)   → range 0 sampai 1
 
 Base URL: `http://localhost:3000/api`
 
+### Auth
 | Method | Endpoint | Akses | Fungsi |
 |---|---|---|---|
-| POST | `/auth/login` | Public | Login |
-| POST | `/auth/register` | Public | Register |
-| POST | `/auth/forgot-password` | Public | Kirim OTP reset password |
+| POST | `/auth/login` | Public | Login, return JWT token |
+| POST | `/auth/register` | Public | Daftar akun baru |
+| POST | `/auth/forgot-password` | Public | Kirim OTP ke email |
 | POST | `/auth/verify-otp` | Public | Verifikasi OTP |
-| POST | `/auth/reset-password` | Public | Reset password |
-| GET | `/products` | Public | Daftar produk (filter: sanggarId, regionId, categoryId, harga) |
-| GET | `/products/:id` | Public | Detail produk |
+| POST | `/auth/reset-password` | Public | Reset password baru |
+
+### Produk
+| Method | Endpoint | Akses | Fungsi |
+|---|---|---|---|
+| GET | `/products` | Public | Daftar produk (filter: sanggarId, regionId, categoryId, minPrice, maxPrice) |
+| GET | `/products/:id` | Public | Detail produk + sanggar + ulasan |
 | POST | `/products` | Admin Sanggar | Tambah produk |
-| PUT | `/products/:id` | Admin Sanggar | Edit produk |
-| DELETE | `/products/:id` | Admin/Super Admin | Hapus produk |
-| GET | `/sanggars` | Public | Daftar sanggar |
-| GET | `/sanggars/me` | Admin Sanggar | Sanggar milik admin login |
-| GET | `/sanggars/:id` | Public | Detail sanggar |
-| POST | `/reviews` | Public | Tambah ulasan |
+| PUT | `/products/:id` | Admin Sanggar | Edit produk miliknya |
+| DELETE | `/products/:id` | Admin / Super Admin | Hapus produk |
+
+### Sanggar
+| Method | Endpoint | Akses | Fungsi |
+|---|---|---|---|
+| GET | `/sanggars` | Public | Daftar semua sanggar |
+| GET | `/sanggars/me` | Admin Sanggar | Sanggar milik admin yang login |
+| GET | `/sanggars/:id` | Public | Detail sanggar + produknya |
+| POST | `/sanggars` | Admin Sanggar | Buat sanggar |
+| PUT | `/sanggars/:id` | Admin Sanggar / Super Admin | Edit sanggar |
+| DELETE | `/sanggars/:id` | Super Admin | Hapus sanggar |
+
+### SPK TOPSIS
+| Method | Endpoint | Akses | Fungsi |
+|---|---|---|---|
+| POST | `/weight-histories` | Public | Buat bobot SPK dari kriteria yang dipilih |
+| POST | `/recommendations/run` | Public | Jalankan TOPSIS, return ranking produk |
+
+### Lainnya
+| Method | Endpoint | Akses | Fungsi |
+|---|---|---|---|
 | GET | `/regions` | Public | Daftar wilayah |
+| POST | `/reviews` | Public | Tambah ulasan produk |
 | GET | `/batik-categories` | Public | Daftar kategori batik |
-| POST | `/weight-histories` | Public | Buat bobot SPK |
-| POST | `/recommendations/run` | Public | Jalankan TOPSIS |
-| GET | `/dashboard/summary` | Super Admin | Statistik dashboard |
+| GET | `/dashboard/summary` | Super Admin | Statistik ringkasan |
 | GET | `/users` | Super Admin | Kelola pengguna |
 
 ---
@@ -299,10 +314,10 @@ Base URL: `http://localhost:3000/api`
 
 | Role | Akses |
 |---|---|
-| **Super Admin** | Kelola semua user, sanggar, wilayah, kategori, produk, kriteria SPK |
-| **Admin Sanggar** | Kelola produk sanggar miliknya, lihat ulasan, edit profil sanggar |
-| **User** | Lihat katalog, beri ulasan & rating, jalankan SPK TOPSIS |
-| **Tamu (tanpa login)** | Lihat katalog, lihat detail produk & sanggar, jalankan SPK TOPSIS |
+| **Super Admin** | Kelola semua user, sanggar, wilayah, kategori, produk, kriteria SPK, lihat semua ulasan |
+| **Admin Sanggar** | Kelola produk sanggar miliknya, lihat ulasan produknya, edit profil sanggar |
+| **User** | Lihat katalog, beri ulasan & rating produk, jalankan SPK TOPSIS |
+| **Tamu (tanpa login)** | Lihat katalog, detail produk & sanggar, jalankan SPK TOPSIS |
 
 ---
 
@@ -310,14 +325,16 @@ Base URL: `http://localhost:3000/api`
 
 | Halaman | URL | Deskripsi |
 |---|---|---|
-| Home | `/` | Landing page, hero, sanggar rekomendasi, produk unggulan |
-| Katalog | `/katalog` | Daftar produk + filter + SPK TOPSIS |
-| Detail Produk | `/produk/:id` | Info produk, ulasan, lokasi sanggar di peta |
-| Detail Sanggar | `/sanggar/:id` | Info sanggar dan daftar produknya |
+| Home | `/` | Landing page — hero search, carousel sanggar rekomendasi, produk rating tertinggi, tentang |
+| Katalog | `/katalog` | Daftar produk + filter wilayah/kategori/harga + SPK TOPSIS dengan peta sanggar |
+| Detail Produk | `/produk/:id` | Info lengkap produk, ulasan (6 terbaru + lihat semua), lokasi sanggar di peta |
+| Detail Sanggar | `/sanggar/:id` | Info sanggar, daftar produknya |
 | Semua Produk | `/produk` | Daftar semua produk |
-| Hasil Rekomendasi | `/rekomendasi/hasil` | Hasil ranking TOPSIS |
+| Hasil Rekomendasi | `/rekomendasi/hasil` | Hasil ranking TOPSIS — skor, jarak, harga |
 | Login | `/login` | Halaman login |
-| Dashboard Admin Sanggar | `/admin-sanggar` | Kelola produk & ulasan sanggar |
+| Register | `/register` | Halaman daftar akun |
+| Lupa Password | `/forgot-password` | Reset password via OTP email |
+| Dashboard Admin Sanggar | `/admin-sanggar` | Kelola produk, ulasan, profil sanggar |
 | Dashboard Super Admin | `/super-admin` | Kelola seluruh data platform |
 
 ---

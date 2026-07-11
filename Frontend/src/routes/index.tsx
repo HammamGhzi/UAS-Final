@@ -5,8 +5,6 @@ import AdminSanggarLayout from '../components/layouts/AdminSanggarLayout';
 import Home from '../pages/Home/Home';
 import ProductDetail from '../pages/ProductDetail/ProductDetail';
 import SanggarDetail from '../pages/SanggarDetail/SanggarDetail';
-import Recommendation from '../pages/Recommendation/Recommendation';
-import RecommendationResult from '../pages/RecommendationResult/RecommendationResult';
 import AdminLogin from '../pages/admin/Login';
 import AdminRegister from '../pages/admin/Register';
 import AdminDashboard from '../pages/admin/Dashboard';
@@ -44,8 +42,6 @@ export const router = createBrowserRouter([
       { path: 'produk', element: <ProdukList /> },
       { path: 'produk/:id', element: <ProductDetail /> },
       { path: 'sanggar/:id', element: <SanggarDetail /> },
-      { path: 'rekomendasi', element: <Recommendation /> },
-      { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
       { path: 'katalog', element: <Katalog /> },
     ],
   },
