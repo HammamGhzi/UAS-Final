@@ -97,7 +97,7 @@ const Home = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(`/katalog?wilayah=${wilayah}&jenis=${jenisBatik}`);
+    navigate(`/spk-preferensi?wilayah=${wilayah}&jenis=${jenisBatik}`);
   };
 
   return (
