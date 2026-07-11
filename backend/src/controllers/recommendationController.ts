@@ -31,4 +31,53 @@ export const getRecommendation = async (req: Request, res: Response) => {
   }
 };
 
-export default { createAndRunRecommendation, getRecommendation };
+// Endpoint publik (tanpa login) khusus alur Katalog: setelah user filter
+// wilayah + jenis batik di landing page dan produk awal tampil di halaman
+// Katalog, user pilih kriteria SPK lewat 2 dropdown "Urutkan Berdasarkan",
+// lalu endpoint ini yang menjalankan TOPSIS beneran (bukan filter).
+// userId opsional karena tamu (belum login) juga boleh pakai fitur ini.
+export const runPublicRecommendation = async (req: Request, res: Response) => {
+  try {
+    const {
+      sessionId,
+      userId,
+      regionId,
+      categoryId,
+      minPrice,
+      maxPrice,
+      userLat,
+      userLon,
+      weightHistoryId,
+    } = req.body;
+
+    if (!sessionId) {
+      return error(res, 'sessionId wajib diisi', 400);
+    }
+    if (!weightHistoryId) {
+      return error(res, 'weightHistoryId wajib diisi (buat dulu lewat /api/weight-histories)', 400);
+    }
+    if (userLat === undefined || userLon === undefined) {
+      return error(res, 'userLat dan userLon wajib diisi', 400);
+    }
+
+    await spkSessionService.createSpkSession({
+      sessionId,
+      userId: userId ?? null,
+      regionId: regionId ?? null,
+      categoryId: categoryId ?? null,
+      minPrice: minPrice ?? 0,
+      maxPrice: maxPrice ?? 999999999,
+      userLat,
+      userLon,
+      weightHistoryId,
+    });
+
+    const results = await recommendationService.getTopsisResultsWithSanggar(sessionId);
+
+    return success(res, { sessionId, results });
+  } catch (err) {
+    return error(res, (err as Error).message || 'Gagal menjalankan rekomendasi');
+  }
+};
+
+export default { createAndRunRecommendation, getRecommendation, runPublicRecommendation };

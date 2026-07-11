@@ -14,6 +14,7 @@ import recommendationRoutes from './routes/recommendationRoutes';
 import spkSessionRoutes from './routes/spkSessionRoutes';
 import regionRoutes from './routes/regionRoutes'; 
 import dashboardRoutes from './routes/dashboardRoutes';
+import weightHistoryRoutes from './routes/weightHistoryRoutes';
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
@@ -36,6 +37,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/spk-sessions', spkSessionRoutes);
 app.use('/api/regions', regionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/weight-histories', weightHistoryRoutes);
 const server = app.listen(PORT, () => {
   console.log(`Server berjalan di PORT : ${PORT}`);
 });

@@ -1,9 +1,51 @@
 import prisma from '../config/prisma';
 
-// Ambil hasil rekomendasi metode TOPSIS
+// Ambil hasil rekomendasi metode TOPSIS.
+// Catatan: view v_topsis_hasil TIDAK punya kolom ranking siap pakai,
+// jadi rankingnya dihitung di sini pakai window function RANK()
+// berdasarkan nilai_preferensi (makin besar nilainya, makin bagus rankingnya).
 export const getTopsisResults = async (sessionId: string) => {
   const rows = await prisma.$queryRawUnsafe(
-    'SELECT sessionId, ranking, productId, productName, price, image, nilai_preferensi FROM v_topsis_hasil WHERE sessionId = ? ORDER BY ranking',
+    `SELECT
+       sessionId,
+       productId,
+       productName,
+       price,
+       image,
+       nilai_preferensi,
+       RANK() OVER (PARTITION BY sessionId ORDER BY nilai_preferensi DESC) AS ranking
+     FROM v_topsis_hasil
+     WHERE sessionId = ?
+     ORDER BY ranking`,
+    sessionId,
+  );
+
+  return rows as any[];
+};
+
+// Ambil hasil TOPSIS + info sanggar (nama sanggar & jarak km) untuk ditampilkan
+// di halaman Katalog setelah SPK dijalankan. Join manual ke v_topsis_base
+// (untuk jarak) dan products/sanggars (untuk nama sanggar), tanpa mengubah
+// view SQL yang sudah ada.
+export const getTopsisResultsWithSanggar = async (sessionId: string) => {
+  const rows = await prisma.$queryRawUnsafe(
+    `SELECT
+       h.sessionId,
+       h.productId,
+       h.productName,
+       h.price,
+       h.image,
+       h.nilai_preferensi,
+       RANK() OVER (PARTITION BY h.sessionId ORDER BY h.nilai_preferensi DESC) AS ranking,
+       b.c2_jarak AS jarak,
+       sg.name AS sanggarName,
+       sg.id AS sanggarId
+     FROM v_topsis_hasil h
+     JOIN v_topsis_base b ON b.sessionId = h.sessionId AND b.productId = h.productId
+     JOIN products p ON p.id = h.productId
+     JOIN sanggars sg ON sg.id = p.sanggarId
+     WHERE h.sessionId = ?
+     ORDER BY ranking`,
     sessionId,
   );
 
@@ -62,4 +104,4 @@ export const saveRecommendationHistory = async (
   });
 };
 
-export default { getTopsisResults, getSawResults, saveRecommendationHistory };
+export default { getTopsisResults, getTopsisResultsWithSanggar, getSawResults, saveRecommendationHistory };

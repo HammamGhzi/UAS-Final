@@ -7,7 +7,7 @@ import { BatikPattern } from "../../assets/BatikPattern";
 import { SanggarCarousel } from "../../components/Sanggar/SanggarCarousel";
 import type { SanggarItem } from "../../components/Sanggar/SanggarCarousel";
 import { ProductCardHome } from "../../components/Product/ProductCardHome";
-import { sanggarApi, productApi } from "../../services/api";
+import { sanggarApi, productApi, regionApi, batikCategoryApi } from "../../services/api";
 import type { Produk } from "../../types";
 
 // Bentuk data persis seperti yang dibalikin getRekomendasiSanggar di backend
@@ -37,8 +37,26 @@ type BackendProduct = {
 
 const Home = () => {
   const navigate = useNavigate();
-  const [wilayah, setWilayah] = useState("");
-  const [jenisBatik, setJenisBatik] = useState("");
+  const [wilayah, setWilayah] = useState(""); // simpan regionId (string) dari DB
+  const [jenisBatik, setJenisBatik] = useState(""); // simpan categoryId (string) dari DB
+
+  // Ambil daftar wilayah asli dari backend buat dropdown "Wilayah"
+  const { data: regions = [] } = useQuery({
+    queryKey: ["regions-home"],
+    queryFn: async () => {
+      const res = await regionApi.getAll();
+      return res.data.data as { id: number; name: string }[];
+    },
+  });
+
+  // Ambil daftar kategori batik asli dari backend buat dropdown "Jenis Batik"
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories-home"],
+    queryFn: async () => {
+      const res = await batikCategoryApi.getAll();
+      return res.data.data as { id: number; categoryName: string }[];
+    },
+  });
 
   // Ambil produk terbaru dari backend (6 pertama) buat section "Temukan batik yang kamu suka"
   const { data: featuredProducts = [] } = useQuery({
@@ -95,15 +113,20 @@ const Home = () => {
     },
   });
 
+  // Wilayah & jenis batik di sini cuma KLASIFIKASI awal (bukan SPK).
+  // Nilai regionId/categoryId dibawa ke halaman Katalog lewat query string;
+  // di halaman Katalog produk hasil filter ditampilkan dulu, baru proses SPK
+  // (TOPSIS) sebenarnya dijalankan lewat tombol "Cari" di halaman itu.
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(`/spk-preferensi?wilayah=${wilayah}&jenis=${jenisBatik}`);
+    const params = new URLSearchParams();
+    if (wilayah) params.set("regionId", wilayah);
+    if (jenisBatik) params.set("categoryId", jenisBatik);
+    navigate(`/katalog?${params.toString()}`);
   };
 
   return (
     <div className="bg-cream-100">
-      {/* Hero Section — full 1 layar (viewport minus navbar) */}
-      {/* ... sisa JSX di bawahnya SAMA PERSIS seperti yang sudah kamu punya, tidak perlu diubah ... */}
       {/* Hero Section — full 1 layar (viewport minus navbar) */}
       <section className="relative min-h-screen min-h-[100svh] min-h-[100dvh] flex flex-col justify-center px-4 py-[clamp(5.5rem,9vh,7rem)] overflow-hidden bg-[#f5ead8]">
         <div className="absolute inset-0 pointer-events-none" />
@@ -157,12 +180,12 @@ const Home = () => {
                       wilayah ? "text-black" : "text-black/80"
                     }`}
                   >
-                    <option value="">Contoh: Tegal Barat</option>
-                    <option value="tegal-barat">Tegal Barat</option>
-                    <option value="tegal-timur">Tegal Timur</option>
-                    <option value="tegal-selatan">Tegal Selatan</option>
-                    <option value="margadana">Margadana</option>
-                    <option value="slawi">Slawi</option>
+                    <option value="">Semua Wilayah</option>
+                    {regions.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/45 pointer-events-none"
@@ -187,11 +210,12 @@ const Home = () => {
                       jenisBatik ? "text-black" : "text-black/80"
                     }`}
                   >
-                    <option value="">Pilih Jenis Batik</option>
-                    <option value="flora">Flora</option>
-                    <option value="fauna">Fauna</option>
-                    <option value="geometris">Geometris</option>
-                    <option value="benda">Benda</option>
+                    <option value="">Semua Jenis</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.categoryName}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/45 pointer-events-none"

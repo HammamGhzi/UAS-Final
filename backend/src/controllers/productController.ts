@@ -4,10 +4,21 @@ import { success, error } from '../utils/response';
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const { sanggarId } = req.query;
+    const { sanggarId, regionId, categoryId, minPrice, maxPrice } = req.query;
+
+    const where: any = {};
+    if (sanggarId) where.sanggarId = Number(sanggarId);
+    if (categoryId) where.categoryId = Number(categoryId);
+    if (regionId) where.sanggar = { regionId: Number(regionId) };
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = Number(minPrice);
+      if (maxPrice) where.price.lte = Number(maxPrice);
+    }
+
     const products = await prisma.product.findMany({
-      where: sanggarId ? { sanggarId: Number(sanggarId) } : undefined,
-      include: { sanggar: true, category: true, reviews: true },
+      where: Object.keys(where).length ? where : undefined,
+      include: { sanggar: { include: { region: true } }, category: true, reviews: true },
       orderBy: { createdAt: 'desc' },
     });
     return success(res, products);
