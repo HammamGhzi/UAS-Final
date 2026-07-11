@@ -21,6 +21,7 @@ import AdminSanggarProducts from '../pages/adminSanggar/Products';
 import AdminSanggarReviews from '../pages/adminSanggar/Reviews';
 import AdminSanggarSettings from '../pages/adminSanggar/Settings';
 import Katalog from '../pages/Katalog/Katalog';
+import SpkPreference from '../pages/SpkPreference/SpkPreference';
 import SuperAdminLayout from '../components/layouts/SuperAdminLayout';
 import SuperAdminDashboard from '../pages/superAdmin/Dashboard';
 import SuperAdminSanggarPage from '../pages/superAdmin/Sanggar';
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: 'sanggar/:id', element: <SanggarDetail /> },
       { path: 'rekomendasi', element: <Recommendation /> },
       { path: 'rekomendasi/hasil', element: <RecommendationResult /> },
+      { path: 'spk-preferensi', element: <SpkPreference /> },
       { path: 'katalog', element: <Katalog /> },
     ],
   },
