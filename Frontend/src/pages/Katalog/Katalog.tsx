@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Search, Star, MapPin, ChevronDown } from 'lucide-react';
 import { productApi, weightHistoryApi, recommendationApi } from '../../services/api';
+import { SanggarMap } from '../../components/Map/SanggarMap';
 
 // Bentuk data persis seperti yang dibalikin getAllProducts di backend
 // (include: { sanggar: true, category: true, reviews: true })
@@ -63,12 +64,10 @@ const KRITERIA_OPTIONS = [
   { value: 'kualitas', label: 'Kualitas terbaik' },
   { value: 'desain', label: 'Desain terbaik' },
   { value: 'jarak', label: 'Jarak terdekat' },
-];
-
-const KRITERIA_HARGA_OPTIONS = [
-  { value: '', label: '-' },
   { value: 'harga-murah', label: 'Harga termurah' },
 ];
+
+const KRITERIA_HARGA_OPTIONS = KRITERIA_OPTIONS; // pakai list yang sama
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
@@ -109,6 +108,7 @@ const mapTopsisToTampil = (r: TopsisResult): ProdukTampil => ({
 
 const Katalog = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // regionId & categoryId ini KLASIFIKASI awal, dibawa dari landing page (Home)
   const regionId = searchParams.get('regionId') || '';
@@ -194,7 +194,11 @@ const Katalog = () => {
   // TOPSIS dan ganti list yang tampil dengan hasil ranking + skor preferensi —
   // ini bagian yang bikin fiturnya jadi SPK, bukan filter.
   const handleCari = async () => {
-    const kriteriaUtama = sortHarga === 'harga-murah' ? 'harga' : sortBy;
+    // dropdown 1 (sortBy) = kriteria utama, dropdown 2 (sortHarga) = kriteria kedua
+    // harga-murah di-map ke 'harga' untuk backend
+    const toBackendValue = (v: string) => v === 'harga-murah' ? 'harga' : v;
+    const kriteriaUtama = toBackendValue(sortBy) || toBackendValue(sortHarga);
+    const kriteriaKeduaRaw = kriteriaUtama === toBackendValue(sortBy) ? toBackendValue(sortHarga) : toBackendValue(sortBy);
 
     if (!kriteriaUtama) {
       // Tidak ada kriteria SPK dipilih -> cuma klasifikasi ulang (rentang harga)
@@ -212,12 +216,7 @@ const Katalog = () => {
     try {
       // Kriteria kedua: kalau harga sudah jadi kriteria utama, kriteria kedua
       // diambil dari sortBy (asal beda), begitu juga sebaliknya.
-      let kriteriaKedua: string | null = null;
-      if (kriteriaUtama === 'harga' && sortBy) {
-        kriteriaKedua = sortBy;
-      } else if (kriteriaUtama !== 'harga' && sortHarga === 'harga-murah') {
-        kriteriaKedua = 'harga';
-      }
+      let kriteriaKedua: string | null = kriteriaKeduaRaw || null;
       if (kriteriaKedua === kriteriaUtama) kriteriaKedua = null;
 
       // 1. Buat bobot SPK dari kriteria yang dipilih user (bobot 5 vs bobot 1)
@@ -248,33 +247,16 @@ const Katalog = () => {
     }
   };
 
-  const handleEksplor = () => {
-    window.open('https://www.google.com/maps/search/batik+tegal/@-6.8694,109.1402,14z', '_blank');
-  };
-
   return (
     <div className="min-h-screen bg-cream-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
 
-          {/* Sidebar */}
-          <aside className="w-64 flex-shrink-0 space-y-4">
-            {/* Peta */}
-            <div
-              onClick={handleEksplor}
-              className="rounded-2xl overflow-hidden bg-gray-300 h-44 relative cursor-pointer group"
-            >
-              <iframe
-                title="peta-tegal"
-                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15811.234!2d109.1402!3d-6.8694!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1234567890"
-                className="w-full h-full opacity-80 pointer-events-none"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition">
-                <button className="bg-lime-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow hover:bg-lime-600 transition">
-                  Eksplor di Peta
-                </button>
-              </div>
+          {/* Sidebar — hidden di mobile, muncul di lg ke atas */}
+          <aside className="hidden lg:block w-64 flex-shrink-0 space-y-4">
+            {/* Peta titik sanggar terdaftar */}
+            <div className="rounded-2xl overflow-hidden bg-gray-300 h-44 relative">
+              <SanggarMap />
             </div>
 
             {/* Filter Harga (klasifikasi, bukan SPK) */}
@@ -301,6 +283,27 @@ const Katalog = () => {
             </div>
           </aside>
 
+          {/* Filter Harga mobile — hanya muncul di bawah lg */}
+          <div className="lg:hidden bg-white rounded-2xl p-4 border border-cream-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-brown-900 text-sm">Rentang Harga</h3>
+              <button onClick={resetFilter} className="text-lime-600 text-xs font-medium hover:text-lime-700">Reset</button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {RENTANG_HARGA.map((range, idx) => (
+                <label key={idx} className="flex items-center gap-1.5 cursor-pointer bg-cream-50 rounded-lg px-3 py-1.5 border border-cream-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedHarga.includes(idx)}
+                    onChange={() => toggleHarga(idx)}
+                    className="w-3.5 h-3.5 accent-lime-500"
+                  />
+                  <span className="text-xs text-brown-700">{range.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Main Content */}
           <div className="flex-1">
             <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
@@ -322,7 +325,9 @@ const Katalog = () => {
                     className="appearance-none bg-cream-50 border border-lime-400 text-lime-700 text-sm rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-2 focus:ring-lime-400 font-medium"
                   >
                     {KRITERIA_OPTIONS.map((k) => (
-                      <option key={k.value} value={k.value}>{k.label}</option>
+                      <option key={k.value} value={k.value} disabled={k.value !== '' && k.value === sortHarga}>
+                        {k.label}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-lime-600 pointer-events-none" />
@@ -335,7 +340,9 @@ const Katalog = () => {
                     className="appearance-none bg-cream-50 border border-lime-400 text-lime-700 text-sm rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-2 focus:ring-lime-400 font-medium"
                   >
                     {KRITERIA_HARGA_OPTIONS.map((k) => (
-                      <option key={k.value} value={k.value}>{k.label}</option>
+                      <option key={k.value} value={k.value} disabled={k.value !== '' && k.value === sortBy}>
+                        {k.label}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-lime-600 pointer-events-none" />
@@ -367,14 +374,13 @@ const Katalog = () => {
                 </div>
               ) : (
                 produkList.map((produk) => (
-                  <Link
+                  <div
                     key={produk.id}
-                    to={`/produk/${produk.id}`}
                     className="block bg-white rounded-2xl overflow-hidden border border-cream-200 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex">
-                      <div className="w-56 flex-shrink-0">
-                        <div className="h-40 bg-gray-100 relative">
+                    <div className="flex flex-col sm:flex-row">
+                      <div className="w-full sm:w-56 flex-shrink-0">
+                        <div className="h-48 sm:h-40 bg-gray-100 relative">
                           <img src={produk.foto[0]} alt={produk.nama} className="w-full h-full object-cover" />
                           <button
                             onClick={(e) => e.preventDefault()}
@@ -429,16 +435,16 @@ const Katalog = () => {
                           <div>
                             <div className="text-orange-500 font-bold text-lg leading-tight">{formatPrice(produk.harga)}</div>
                             <button
-                              onClick={(e) => e.preventDefault()}
+                              onClick={() => navigate(`/produk/${produk.id}`)}
                               className="mt-2 bg-lime-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-lime-600 transition w-full"
                             >
-                              Pilih Warna
+                              Lihat Detail
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               )}
             </div>

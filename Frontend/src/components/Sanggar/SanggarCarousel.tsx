@@ -81,7 +81,7 @@ export const SanggarCarousel = ({ items }: SanggarCarouselProps) => {
         }`}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="flex gap-6 px-6 md:px-0 md:gap-5">
+        <div className="flex gap-6 px-4 sm:px-6 md:px-0 md:gap-5">
           {items.map((sanggar, index) => (
             <motion.div
               key={sanggar.id}

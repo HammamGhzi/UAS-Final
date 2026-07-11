@@ -61,33 +61,41 @@ const Home = () => {
   // Ambil produk terbaru dari backend (6 pertama) buat section "Temukan batik yang kamu suka"
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["produk-home"],
+    staleTime: 0, // selalu refetch saat halaman dikunjungi ulang
     queryFn: async () => {
       const res = await productApi.getAll();
       const data = res.data.data as BackendProduct[];
-      return data.slice(0, 6).map((p): Produk => {
-        const jumlahReview = p.reviews.length;
-        const rating =
-          jumlahReview > 0
-            ? p.reviews.reduce(
-                (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
-                0,
-              ) / jumlahReview
-            : 0;
 
-        return {
-          id: String(p.id),
-          nama: p.productName,
-          harga: Number(p.price),
-          kategori: p.category?.categoryName || "",
-          motif: "",
-          jenisKain: "",
-          teknik: "",
-          foto: [p.image || "/batik 1.jpg"],
-          sanggarId: String(p.sanggarId),
-          rating: Number(rating.toFixed(1)),
-          jumlahReview,
-        };
-      });
+      // Hitung rating dulu untuk semua produk, lalu sort by rating tertinggi,
+      // baru ambil 6 teratas untuk ditampilkan di homepage
+      return data
+        .map((p): Produk => {
+          const jumlahReview = p.reviews.length;
+          const rating =
+            jumlahReview > 0
+              ? p.reviews.reduce(
+                  (sum, r) => sum + (r.quality + r.popularity + r.design) / 3,
+                  0,
+                ) / jumlahReview
+              : 0;
+
+          return {
+            id: String(p.id),
+            nama: p.productName,
+            harga: Number(p.price),
+            kategori: p.category?.categoryName || "",
+            motif: "",
+            jenisKain: "",
+            teknik: "",
+            foto: [p.image || "/batik 1.jpg"],
+            sanggarId: String(p.sanggarId),
+            rating: Number(rating.toFixed(1)),
+            jumlahReview,
+          };
+        })
+        .filter((p) => p.jumlahReview > 0) // hanya tampilkan yang sudah ada rating
+        .sort((a, b) => b.rating - a.rating) // urutkan rating tertinggi dulu
+        .slice(0, 6);
     },
   });
 
@@ -259,19 +267,11 @@ const Home = () => {
           </motion.div>
 
           <SanggarCarousel items={topSanggar} />
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.35, duration: 0.4 }}
-            className="text-center mt-12 sm:mt-14 px-4"
-          ></motion.div>
         </div>
       </section>
 
       {/* Promo Section */}
-      <section className="py-16 px-4 bg-[#f5ead8]">
+      <section className="py-10 px-4 bg-[#f5ead8]">
         <div className="max-w-4xl mx-auto">
           <div className="relative" style={{ paddingTop: "60px" }}>
             {/* Card */}
@@ -329,7 +329,7 @@ const Home = () => {
       </section>
 
       {/* Products Section */}
-      <section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
+      <section id="katalog-section" className="py-10 px-4 bg-[#f5ead8]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
@@ -361,7 +361,7 @@ const Home = () => {
       </section>
 
       {/* Tentang Section */}
-      <section id="tentang-section" className="py-20 px-4 bg-[#f5ead8]">
+      <section id="tentang-section" className="py-12 px-4 bg-[#f5ead8]">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>

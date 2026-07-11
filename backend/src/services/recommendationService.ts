@@ -20,7 +20,13 @@ export const getTopsisResults = async (sessionId: string) => {
     sessionId,
   );
 
-  return rows as any[];
+  return (rows as any[]).map((r) => ({
+    ...r,
+    productId: Number(r.productId),
+    price: Number(r.price),
+    nilai_preferensi: Number(r.nilai_preferensi),
+    ranking: Number(r.ranking),
+  }));
 };
 
 // Ambil hasil TOPSIS + info sanggar (nama sanggar & jarak km) untuk ditampilkan
@@ -49,7 +55,15 @@ export const getTopsisResultsWithSanggar = async (sessionId: string) => {
     sessionId,
   );
 
-  return rows as any[];
+  return (rows as any[]).map((r) => ({
+    ...r,
+    productId: Number(r.productId),
+    price: Number(r.price),
+    nilai_preferensi: Number(r.nilai_preferensi),
+    ranking: Number(r.ranking),
+    jarak: Number(r.jarak),
+    sanggarId: Number(r.sanggarId),
+  }));
 };
 
 // Ambil hasil rekomendasi metode SAW
@@ -59,7 +73,12 @@ export const getSawResults = async (sessionId: string) => {
     sessionId,
   );
 
-  return rows as any[];
+  return (rows as any[]).map((r) => ({
+    ...r,
+    productId: Number(r.productId),
+    nilai_preferensi: Number(r.nilai_preferensi),
+    ranking: Number(r.ranking),
+  }));
 };
 
 // Simpan riwayat rekomendasi ke database

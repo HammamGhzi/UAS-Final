@@ -294,7 +294,7 @@ const MainLayout = () => {
               <h4 className="font-semibold mb-4 text-brown-900">Product</h4>
               <ul className="space-y-2 text-sm text-brown-600">
                 <li>
-                  <button onClick={() => scrollTo('katalog-section')} className="hover:text-brown-900">
+                  <button onClick={() => navigate('/katalog')} className="hover:text-brown-900">
                     Katalog
                   </button>
                 </li>
@@ -304,8 +304,8 @@ const MainLayout = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => scrollTo('rekomendasi-section')} className="hover:text-brown-900">
-                    Rekomendasi
+                  <button onClick={() => scrollTo('katalog-section')} className="hover:text-brown-900">
+                    Produk Unggulan
                   </button>
                 </li>
               </ul>
@@ -318,7 +318,7 @@ const MainLayout = () => {
                     Tentang
                   </button>
                 </li>
-                <li><a href="#" className="hover:text-brown-900">Kontak</a></li>
+                <li><a href="https://wa.me/6282328275457" target="_blank" rel="noopener noreferrer" className="hover:text-brown-900">Kontak</a></li>
               </ul>
             </div>
             <div>
