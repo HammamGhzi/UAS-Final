@@ -131,12 +131,40 @@ export const regionApi = {
   delete: (id: number) => api.delete(`/regions/${id}`),
 };
 export const productApi = {
-  getAll: (sanggarId?: number) =>
-    api.get('/products', sanggarId ? { params: { sanggarId } } : undefined),
+  getAll: (params?: {
+    sanggarId?: number;
+    regionId?: number;
+    categoryId?: number;
+    minPrice?: number;
+    maxPrice?: number;
+  }) => api.get('/products', params ? { params } : undefined),
   getById: (id: number) => api.get(`/products/${id}`),
   create: (data: Record<string, unknown>) => api.post('/products', data),
   update: (id: number, data: Record<string, unknown>) => api.put(`/products/${id}`, data),
   delete: (id: number) => api.delete(`/products/${id}`),
+};
+
+// Weight History — bikin bobot SPK dari 2 dropdown kriteria yang dipilih user
+// di halaman Katalog (kriteria dipilih = bobot 5, kriteria lain = bobot 1)
+export const weightHistoryApi = {
+  create: (data: { kriteriaUtama: string; kriteriaKedua?: string | null }) =>
+    api.post('/weight-histories', data),
+};
+
+// Recommendation (TOPSIS) — endpoint publik dipanggil dari tombol "Cari"
+// di halaman Katalog untuk menjalankan SPK yang sebenarnya
+export const recommendationApi = {
+  run: (data: {
+    sessionId: string;
+    userId?: number | null;
+    regionId?: number | null;
+    categoryId?: number | null;
+    minPrice?: number;
+    maxPrice?: number;
+    userLat: number;
+    userLon: number;
+    weightHistoryId: number;
+  }) => api.post('/recommendations/run', data),
 };
 
 export const myReviewApi = {

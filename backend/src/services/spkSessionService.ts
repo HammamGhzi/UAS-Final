@@ -3,7 +3,7 @@ import prisma from '../config/prisma';
 // Buat sesi SPK baru
 export const createSpkSession = async (data: {
   sessionId: string;
-  userId: number;
+  userId?: number | null;
   regionId?: number | null;
   categoryId?: number | null;
   minPrice?: number;
