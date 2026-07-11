@@ -9,12 +9,18 @@ import { Input } from "../../components/UI/Input";
 import { authApi } from "../../services/api";
 import { useAuthStore } from "../../stores/useAuthStore";
 import type { LoginResponse } from "../../types/auth";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import type { AxiosError } from "axios";
 import {
   LoginStatusOverlay,
   ShakeWrapper,
 } from "../../components/UI/LoginStatusOverlay";
+import {
+  AuthLayout,
+  authButtonClass,
+  authInputClass,
+  authLinkClass,
+} from "../../components/layouts/AuthLayout";
 
 const loginSchema = z.object({
   username: z
@@ -98,132 +104,88 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fff7df] px-4 py-8 sm:px-8 lg:px-14">
-      <img
-        src="/login2.png"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-32 bottom-0 w-[300px] opacity-25 blur-[3px] sm:w-[430px] lg:-left-24 lg:w-[560px]"
-      />
+    <>
+      <AuthLayout
+        headline="Selamat Datang Kembali"
+        description="Masuk ke akun Canting untuk menjelajahi koleksi batik Tegal, mengelola sanggar, atau memberikan ulasan produk favoritmu."
+        backTo="/"
+        footer={
+          <p className="text-sm text-white/55">
+            Belum punya akun?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/form/register")}
+              className={authLinkClass}
+            >
+              Daftar Disini
+            </button>
+          </p>
+        }
+      >
+        <ShakeWrapper triggerKey={shakeKey}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            <div>
+              <Input
+                type="text"
+                placeholder="username@gmail.com"
+                {...register("username", {
+                  onChange: () => setError(""),
+                })}
+                disabled={loginMutation.isPending}
+                error={errors.username?.message}
+                className={authInputClass}
+              />
+            </div>
 
-      <main className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <section className="relative flex min-h-[620px] w-full max-w-[1100px] items-center justify-center overflow-hidden rounded-[34px] bg-[#fde9d6] px-5 py-10 shadow-[0_28px_90px_rgba(121,91,68,0.14)] sm:px-10 lg:min-h-[686px]">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="absolute left-5 top-5 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/85 text-[#8b5f31] shadow-sm transition hover:-translate-x-0.5 hover:bg-white hover:text-[#583822] sm:left-8 sm:top-8"
-            aria-label="Kembali ke halaman utama"
-          >
-            <ArrowLeft size={22} />
-          </button>
-
-          <img
-            src="/login1.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 w-[1040px] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-52"
-          />
-
-          <div className="absolute left-1/2 top-14 h-9 w-9 -translate-x-1/2 rounded-full bg-[#9a6a3a] opacity-80" />
-
-          <ShakeWrapper
-            triggerKey={shakeKey}
-            className="relative w-full max-w-[350px] overflow-hidden rounded-[28px] bg-[#fff7ef]/72 px-8 py-10 shadow-[0_24px_80px_rgba(88,56,34,0.18)] backdrop-blur-[7px] sm:px-9 sm:py-11"
-          >
-            <img
-              src="/login1.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-1/2 w-[560px] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-20 blur-[6px]"
-            />
-
-            <div className="relative">
-              <h1 className="text-center text-[38px] font-bold leading-none tracking-normal text-[#333333]">
-                Login
-              </h1>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-3.5">
-                <div>
-                  <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                    Email
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="username@gmail.com"
-                    {...register("username", {
-                      onChange: () => setError(""),
-                    })}
-                    disabled={loginMutation.isPending}
-                    error={errors.username?.message}
-                    className="h-[30px] rounded-md border-0 bg-white/95 px-4 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-xs font-medium text-[#4b423b]">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      {...register("password", {
-                        onChange: () => setError(""),
-                      })}
-                      disabled={loginMutation.isPending}
-                      error={errors.password?.message}
-                      className="h-[30px] rounded-md border-0 bg-white/95 px-4 pr-10 text-xs text-brown-900 shadow-none placeholder:text-brown-200 focus:ring-2 focus:ring-[#b4ed00]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((current) => !current)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-brown-300 transition hover:text-brown-700"
-                      aria-label={
-                        showPassword
-                          ? "Sembunyikan password"
-                          : "Tampilkan password"
-                      }
-                    >
-                      {showPassword ? <Eye size={13} /> : <EyeOff size={13} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                 <button
-                    type="button"
-                    onClick={() => navigate("/form/forgot-password")}
-                    className="text-xs font-medium text-[#bd6b16] transition hover:text-[#8b4b10]"
-                  >
-                    Lupa Sandi?
-                  </button>
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  className="mt-6 h-[30px] w-full rounded-full bg-[#b6ec00] py-0 text-xs font-bold text-white shadow-none hover:bg-[#9fd000] disabled:cursor-not-allowed disabled:opacity-70"
+            <div>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  {...register("password", {
+                    onChange: () => setError(""),
+                  })}
                   disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? "Memproses..." : "Masuk"}
-                </Button>
-              </form>
-
-              <p className="mt-6 text-center text-xs text-[#4b423b]">
-                Belum punya akun?{" "}
+                  error={errors.password?.message}
+                  className={`${authInputClass} pr-12`}
+                />
                 <button
                   type="button"
-                  onClick={() => navigate("/form/register")}
-                  className="font-bold text-[#6aa300] transition hover:text-[#4d7a00]"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-white/45 transition hover:text-white/80"
+                  aria-label={
+                    showPassword
+                      ? "Sembunyikan password"
+                      : "Tampilkan password"
+                  }
                 >
-                  Daftar Disini
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
-              </p>
+              </div>
             </div>
-          </ShakeWrapper>
-        </section>
-      </main>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => navigate("/form/forgot-password")}
+                className="text-sm text-white/55 transition hover:text-[#c4a882]"
+              >
+                Lupa Sandi?
+              </button>
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className={authButtonClass}
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Memproses..." : "Masuk"}
+            </Button>
+          </form>
+        </ShakeWrapper>
+      </AuthLayout>
 
       <LoginStatusOverlay
         show={showSuccess}
@@ -240,7 +202,7 @@ const AdminLogin = () => {
         duration={3000}
         onDone={handleErrorPopupDone}
       />
-    </div>
+    </>
   );
 };
 

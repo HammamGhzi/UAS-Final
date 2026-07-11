@@ -28,16 +28,16 @@ const SuperAdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f6fb] text-[#202020]">
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-[88px] flex-col items-center bg-white py-9">
+      <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center border-r border-[#eceef3] bg-white py-5">
         <button
           type="button"
-          className="mb-16 flex h-10 w-10 items-center justify-center rounded-xl text-[#222222] transition hover:bg-[#f2f2f2]"
+          className="mb-6 flex h-9 w-9 items-center justify-center rounded-lg text-[#222222] transition hover:bg-[#f2f2f2]"
           aria-label="Menu"
         >
-          <Menu size={28} strokeWidth={2.4} />
+          <Menu size={20} strokeWidth={2.2} />
         </button>
 
-        <nav className="flex flex-1 flex-col items-center gap-9">
+        <nav className="flex flex-1 flex-col items-center gap-4">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.to);
@@ -46,13 +46,15 @@ const SuperAdminLayout = () => {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
-                  active ? "text-[#ff9800]" : "text-[#7a7a7a] hover:bg-[#f2f2f2]"
+                className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
+                  active
+                    ? "bg-[#fff4df] text-[#ff9800]"
+                    : "text-[#7a7a7a] hover:bg-[#f2f2f2]"
                 }`}
                 aria-label={item.label}
                 title={item.label}
               >
-                <Icon size={28} strokeWidth={active ? 2.8 : 2.4} />
+                <Icon size={20} strokeWidth={active ? 2.6 : 2.2} />
               </Link>
             );
           })}
@@ -61,15 +63,15 @@ const SuperAdminLayout = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-[#8b8b8b] transition hover:bg-[#fff1f1] hover:text-red-500"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-[#8b8b8b] transition hover:bg-[#fff1f1] hover:text-red-500"
           aria-label="Logout"
           title="Logout"
         >
-          <LogOut size={26} />
+          <LogOut size={18} />
         </button>
       </aside>
 
-      <div className="min-h-screen pl-[88px]">
+      <div className="min-h-screen pl-16">
         <header className="flex h-[92px] items-center justify-between px-8">
           <div className="flex h-[48px] w-[420px] max-w-full items-center gap-3 rounded-full border border-[#e4e4e4] bg-white px-5 text-[#8a8a8a]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
