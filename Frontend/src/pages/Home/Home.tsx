@@ -267,19 +267,11 @@ const Home = () => {
           </motion.div>
 
           <SanggarCarousel items={topSanggar} />
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.35, duration: 0.4 }}
-            className="text-center mt-12 sm:mt-14 px-4"
-          ></motion.div>
         </div>
       </section>
 
       {/* Promo Section */}
-      <section className="py-16 px-4 bg-[#f5ead8]">
+      <section className="py-10 px-4 bg-[#f5ead8]">
         <div className="max-w-4xl mx-auto">
           <div className="relative" style={{ paddingTop: "60px" }}>
             {/* Card */}
@@ -337,7 +329,7 @@ const Home = () => {
       </section>
 
       {/* Products Section */}
-      <section id="katalog-section" className="py-16 px-4 bg-[#f5ead8]">
+      <section id="katalog-section" className="py-10 px-4 bg-[#f5ead8]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-serif font-bold text-brown-900 mb-2">
@@ -369,7 +361,7 @@ const Home = () => {
       </section>
 
       {/* Tentang Section */}
-      <section id="tentang-section" className="py-20 px-4 bg-[#f5ead8]">
+      <section id="tentang-section" className="py-12 px-4 bg-[#f5ead8]">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
