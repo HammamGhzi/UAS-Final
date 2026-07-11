@@ -4,7 +4,10 @@ import { success, error } from '../utils/response';
 
 export const getAllRegions = async (req: Request, res: Response) => {
   try {
-    const regions = await prisma.region.findMany({ orderBy: { name: 'asc' } });
+    const regions = await prisma.region.findMany({
+      orderBy: { name: 'asc' },
+      include: { sanggars: { select: { id: true } } }, // hanya ambil id, cukup untuk hitung jumlah
+    });
     return success(res, regions);
   } catch (err) {
     return error(res, (err as Error).message || 'Gagal mendapatkan wilayah');

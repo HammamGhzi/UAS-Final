@@ -2,7 +2,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Heart, Share2, ShieldCheck, Star } from 'lucide-react';
+import { Share2, ShieldCheck, Star } from 'lucide-react';
 import { productApi, reviewApi } from '../../services/api';
 import { MapComponent } from '../../components/Map/MapComponent';
 
@@ -98,7 +98,6 @@ const ProductDetail = () => {
   const isUser = isLoggedIn && user?.role === 'USER';
 
   const [qty, setQty] = useState(1);
-  const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     reviewerName: '',
     quality: 4,
@@ -236,15 +235,21 @@ const ProductDetail = () => {
 
             <div className="flex items-center gap-5 text-sm font-medium">
               <button
-                onClick={() => {
-                  navigator.clipboard?.writeText(window.location.href);
+                onClick={async () => {
+                  const url = window.location.href;
+                  const title = product.productName;
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title, text: `Lihat produk batik: ${title}`, url });
+                    } catch (_) {}
+                  } else {
+                    navigator.clipboard?.writeText(url);
+                    alert('Link berhasil disalin!');
+                  }
                 }}
                 className="flex items-center gap-1.5 hover:underline"
               >
-                <Share2 size={16} /> Share
-              </button>
-              <button onClick={() => setSaved(!saved)} className="flex items-center gap-1.5 hover:underline">
-                <Heart size={16} className={saved ? 'fill-[#ff385c] text-[#ff385c]' : ''} /> Save
+                <Share2 size={16} /> Bagikan
               </button>
             </div>
           </div>
