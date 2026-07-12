@@ -28,6 +28,7 @@ CANTING adalah platform web untuk mencari dan merekomendasikan batik Tegalan ter
 - 👤 **Multi Role** — Super Admin, Admin Sanggar, dan User biasa
 - 🔐 **Autentikasi JWT** — login, register, lupa password dengan OTP via email
 - 📱 **Responsive** — dapat diakses dari HP, tablet, dan desktop
+- 🧮 **Audit TOPSIS** — Super Admin dapat melihat riwayat sesi SPK lengkap beserta perhitungan step-by-step dari `v_topsis_base` sampai `v_topsis_hasil`
 
 ---
 
@@ -73,28 +74,41 @@ uassss/
 ├── Frontend/                        # Aplikasi React + TypeScript
 │   ├── public/                      # Asset statis (gambar, icon)
 │   └── src/
-│       ├── assets/                  # SVG, pattern batik
+│       ├── assets/                  # SVG, pattern batik, hero image
+│       ├── lib/                     # utils.ts (helper umum)
 │       ├── components/
-│       │   ├── layouts/             # MainLayout, AdminSanggarLayout, SuperAdminLayout, AuthLayout
-│       │   ├── UI/                  # Button, Card, Input, Select
-│       │   ├── Map/                 # MapComponent (detail), SanggarMap (katalog)
+│       │   ├── layouts/             # MainLayout, AdminLayout, AdminSanggarLayout,
+│       │   │                        # SuperAdminLayout, AuthLayout
+│       │   ├── UI/                  # Button, Card, Input, Select, LoginStatusOverlay
+│       │   ├── Map/                 # MapComponent (detail produk), SanggarMap (katalog)
 │       │   ├── Product/             # ProductCard, ProductCardHome
-│       │   └── Sanggar/             # SanggarCard, SanggarCarousel
+│       │   ├── Sanggar/             # SanggarCard, SanggarCarousel
+│       │   └── superAdmin/          # FilterDropdown, Pagination, StarRating
 │       ├── pages/
 │       │   ├── Home/                # Landing page
 │       │   ├── Katalog/             # Katalog produk + SPK TOPSIS
 │       │   ├── ProductDetail/       # Detail produk & ulasan
 │       │   ├── SanggarDetail/       # Detail sanggar & produknya
 │       │   ├── ProdukList/          # Semua produk
-│       │   ├── RecommendationResult/# Hasil ranking TOPSIS
-│       │   ├── form/               # Login, Register, Forgot Password
-│       │   ├── adminSanggar/        # Dashboard Admin Sanggar (produk, ulasan, settings)
-│       │   └── superAdmin/          # Dashboard Super Admin (pengguna, sanggar, wilayah, kategori, produk)
+│       │   ├── admin/               # Login, Register, ForgotPassword (shared auth pages)
+│       │   ├── adminSanggar/        # Dashboard Admin Sanggar
+│       │   │                        # (Dashboard, Products, Reviews, Settings,
+│       │   │                        #  productFormModal, productStore, reviewStore,
+│       │   │                        #  useProducts, useReviews, useMySanggar)
+│       │   └── superAdmin/          # Dashboard Super Admin
+│       │                            # (Dashboard, Sanggar, Produk, Kategori, Region,
+│       │                            #  Reviews, Pengguna, SpkSessions,
+│       │                            #  useSpkSessions, useUsers, useSanggar,
+│       │                            #  useProdukAdmin, useReviewsAdmin, useRegion,
+│       │                            #  useCategories, useDashboardSummary,
+│       │                            #  userFormModal, sanggarEditModal, ProdukEditModal,
+│       │                            #  categoryFormModal, regionFormModal,
+│       │                            #  UserStore, sanggarEditStore, produkEditStore,
+│       │                            #  RegionStore, CategoryStore)
 │       ├── services/                # api.ts — semua axios API calls
 │       ├── stores/                  # useAuthStore (Zustand)
-│       ├── types/                   # TypeScript types
-│       ├── hooks/                   # Custom hooks
-│       └── routes/                  # index.tsx + ProtectedRoute
+│       ├── types/                   # auth.ts, index.ts
+│       └── routes/                  # index.tsx + ProtectedRoute.tsx
 │
 ├── backend/                         # API Server Express + TypeScript
 │   ├── src/
@@ -102,10 +116,12 @@ uassss/
 │   │   ├── controllers/             # auth, user, product, sanggar, review, region,
 │   │   │                            # batikCategory, criteria, recommendation,
 │   │   │                            # spkSession, weightHistory, dashboard
-│   │   ├── routes/                  # route definitions (sama dengan controller)
+│   │   ├── routes/                  # auth, user, product, sanggar, review, region,
+│   │   │                            # batikCategory, criteria, recommendation,
+│   │   │                            # spkSession, weightHistory, dashboard
 │   │   ├── services/                # recommendationService, spkSessionService,
 │   │   │                            # weightingService, authService
-│   │   ├── middlewares/             # authMiddleware (JWT verify)
+│   │   ├── middlewares/             # authMiddleware.ts (JWT verify + authorizeRoles)
 │   │   └── utils/                   # response.ts, mailer.ts
 │   └── prisma/
 │       ├── schema.prisma            # Model database
@@ -298,6 +314,8 @@ Base URL: `http://localhost:3000/api`
 |---|---|---|---|
 | POST | `/weight-histories` | Public | Buat bobot SPK dari kriteria yang dipilih |
 | POST | `/recommendations/run` | Public | Jalankan TOPSIS, return ranking produk |
+| GET | `/spk-sessions` | Super Admin | Daftar semua sesi SPK (urutan terbaru/terlama) |
+| GET | `/spk-sessions/:sessionId/detail` | Super Admin | Detail satu sesi — full 6 step TOPSIS (base → pembagi → norm_terbobot → ideal → jarak → hasil) |
 
 ### Lainnya
 | Method | Endpoint | Akses | Fungsi |
@@ -314,7 +332,7 @@ Base URL: `http://localhost:3000/api`
 
 | Role | Akses |
 |---|---|
-| **Super Admin** | Kelola semua user, sanggar, wilayah, kategori, produk, kriteria SPK, lihat semua ulasan |
+| **Super Admin** | Kelola semua user, sanggar, wilayah, kategori, produk, kriteria SPK, lihat semua ulasan, audit riwayat sesi SPK TOPSIS |
 | **Admin Sanggar** | Kelola produk sanggar miliknya, lihat ulasan produknya, edit profil sanggar |
 | **User** | Lihat katalog, beri ulasan & rating produk, jalankan SPK TOPSIS |
 | **Tamu (tanpa login)** | Lihat katalog, detail produk & sanggar, jalankan SPK TOPSIS |
@@ -336,6 +354,7 @@ Base URL: `http://localhost:3000/api`
 | Lupa Password | `/forgot-password` | Reset password via OTP email |
 | Dashboard Admin Sanggar | `/admin-sanggar` | Kelola produk, ulasan, profil sanggar |
 | Dashboard Super Admin | `/super-admin` | Kelola seluruh data platform |
+| SPK Sessions | `/super-admin/spk-sessions` | Riwayat semua sesi SPK TOPSIS — search, sort terbaru/terlama, dan detail perhitungan lengkap per sesi |
 
 ---
 
