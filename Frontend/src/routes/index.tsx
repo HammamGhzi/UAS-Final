@@ -30,6 +30,7 @@ import ProtectedRoute from './ProtectedRoute';
 import ProdukList from '../pages/ProdukList/ProdukList';
 import SuperAdminKategoriPage from '../pages/superAdmin/Kategori';
 import SuperAdminRegionsPage from '../pages/superAdmin/Region';
+import SuperAdminSpkSessionsPage from '../pages/superAdmin/SpkSessions';
 import ForgotPassword from '../pages/admin/ForgotPassword';
 
 
@@ -103,7 +104,8 @@ export const router = createBrowserRouter([
           { path: 'reviews', element: <SuperAdminReviewsPage /> },
           { path: 'pengguna', element: <SuperAdminPenggunaPage /> },
           { path: 'kategori', element: <SuperAdminKategoriPage /> },
-          { path: 'regions', element: <SuperAdminRegionsPage /> }, // <- baru
+          { path: 'regions', element: <SuperAdminRegionsPage /> },
+          { path: 'spk-sessions', element: <SuperAdminSpkSessionsPage /> },
         ],
       },
     ],

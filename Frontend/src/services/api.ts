@@ -175,4 +175,11 @@ export const myReviewApi = {
 export const dashboardApi = {
   getSummary: () => api.get('/dashboard/summary'),
 };
+
+// SPK Sessions — Super Admin bisa lihat semua sesi SPK & detail perhitungan TOPSIS
+export const spkSessionApi = {
+  getAll: () => api.get('/spk-sessions'),
+  getDetail: (sessionId: string) => api.get(`/spk-sessions/${sessionId}/detail`),
+};
+
 export default api;
