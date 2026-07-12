@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate, ScrollRestoration } from 'react-router-dom';
 import { LogOut, Menu, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,6 +71,7 @@ const MainLayout = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-cream-50">
       {/* Navbar */}
       <nav
@@ -336,6 +337,8 @@ const MainLayout = () => {
         </div>
       </footer>
     </div>
+    <ScrollRestoration />
+    </>
   );
 };
 
