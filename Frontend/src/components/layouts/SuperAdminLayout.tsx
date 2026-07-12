@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, LogOut, Map, MapPin, Menu, Package, ShieldCheck, Star, Tag, Users, X } from "lucide-react";
+import { LayoutGrid, LogOut, Map, MapPin, Menu, Package, ShieldCheck, Star, Tag, Users, X, BarChart2 } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 const sidebarItems = [
@@ -11,6 +11,7 @@ const sidebarItems = [
   { to: "/super-admin/regions", icon: Map, label: "Wilayah" },
   { to: "/super-admin/reviews", icon: Star, label: "Reviews" },
   { to: "/super-admin/pengguna", icon: Users, label: "Pengguna" },
+  { to: "/super-admin/spk-sessions", icon: BarChart2, label: "SPK Sessions" },
 ];
 
 const SuperAdminLayout = () => {
