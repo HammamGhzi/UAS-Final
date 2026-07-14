@@ -3,6 +3,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Search, Star, MapPin, ChevronDown } from 'lucide-react';
 import { productApi, weightHistoryApi, recommendationApi } from '../../services/api';
 import { SanggarMap } from '../../components/Map/SanggarMap';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 // Bentuk data persis seperti yang dibalikin getAllProducts di backend
 // (include: { sanggar: true, category: true, reviews: true })
@@ -59,12 +60,12 @@ const RENTANG_HARGA = [
 // kualitas/popularitas/desain masing-masing sudah jadi kriteria sendiri,
 // sesuai kesepakatan bersama dosen.
 const KRITERIA_OPTIONS = [
-  { value: '', label: '-' },
-  { value: 'popularitas', label: 'Popularitas tertinggi' },
-  { value: 'kualitas', label: 'Kualitas terbaik' },
-  { value: 'desain', label: 'Desain terbaik' },
-  { value: 'jarak', label: 'Jarak terdekat' },
-  { value: 'harga-murah', label: 'Harga termurah' },
+  { value: '', label: '— Pilih Kriteria —' },
+  { value: 'popularitas', label: 'Popularitas' },
+  { value: 'kualitas', label: 'Kualitas' },
+  { value: 'desain', label: 'Desain' },
+  { value: 'jarak', label: 'Jarak' },
+  { value: 'harga-murah', label: 'Harga' },
 ];
 
 const KRITERIA_HARGA_OPTIONS = KRITERIA_OPTIONS; // pakai list yang sama
@@ -109,6 +110,7 @@ const mapTopsisToTampil = (r: TopsisResult): ProdukTampil => ({
 const Katalog = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
   // regionId & categoryId ini KLASIFIKASI awal, dibawa dari landing page (Home)
   const regionId = searchParams.get('regionId') || '';
@@ -123,7 +125,7 @@ const Katalog = () => {
   const [sortHarga, setSortHarga] = useState('');
 
   // Rentang harga di sidebar tetap KLASIFIKASI (filter), bukan bagian SPK
-  const [selectedHarga, setSelectedHarga] = useState<number[]>([]);
+  const [selectedHarga, setSelectedHarga] = useState<number | null>(null);
 
   const [produkList, setProdukList] = useState<ProdukTampil[]>([]);
   const [isLoadingAwal, setIsLoadingAwal] = useState(true);
@@ -131,21 +133,38 @@ const Katalog = () => {
   const [sudahSpk, setSudahSpk] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const [userLocation] = useState<{ lat: number; lng: number } | null>(() => {
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
     const saved = localStorage.getItem('userLocation');
     return saved ? JSON.parse(saved) : null;
   });
 
+  // Refresh lokasi secara eksplisit — gunakan saat lokasi terasa tidak akurat
+  const refreshUserLocation = () => {
+    if (!navigator.geolocation) {
+      console.warn('Browser tidak mendukung geolocation');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        localStorage.setItem('userLocation', JSON.stringify(loc));
+        setUserLocation(loc);
+        console.log('Lokasi diperbarui manual:', loc);
+      },
+      (err) => {
+        console.warn('Gagal refresh lokasi:', err.message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
+
   const judulKategori = 'Semua Produk';
 
-  // Hitung rentang harga gabungan dari checkbox yang dicentang, buat query minPrice/maxPrice
+  // Hitung rentang harga dari pilihan tunggal, buat query minPrice/maxPrice
   const getRentangHargaTerpilih = () => {
-    if (selectedHarga.length === 0) return { minPrice: undefined, maxPrice: undefined };
-    const ranges = selectedHarga.map((idx) => RENTANG_HARGA[idx]);
-    return {
-      minPrice: Math.min(...ranges.map((r) => r.min)),
-      maxPrice: Math.max(...ranges.map((r) => r.max)),
-    };
+    if (selectedHarga === null) return { minPrice: undefined, maxPrice: undefined };
+    const range = RENTANG_HARGA[selectedHarga];
+    return { minPrice: range.min, maxPrice: range.max };
   };
 
   // Ambil data AWAL: produk hasil filter wilayah + jenis batik dari landing page
@@ -177,16 +196,14 @@ const Katalog = () => {
   }, [regionId, categoryId]);
 
   const resetFilter = () => {
-    setSelectedHarga([]);
+    setSelectedHarga(null);
     setSortBy('');
     setSortHarga('');
     fetchDataAwal();
   };
 
   const toggleHarga = (idx: number) => {
-    setSelectedHarga((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
+    setSelectedHarga((prev) => (prev === idx ? null : idx));
   };
 
   // Tombol "Cari": kalau tidak ada kriteria SPK dipilih, cuma re-filter data awal
@@ -228,6 +245,7 @@ const Katalog = () => {
       const sessionId = `spk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const runRes = await recommendationApi.run({
         sessionId,
+        userId: user?.id ?? null,
         regionId: regionId ? Number(regionId) : null,
         categoryId: categoryId ? Number(categoryId) : null,
         minPrice,
@@ -271,10 +289,11 @@ const Katalog = () => {
                 {RENTANG_HARGA.map((range, idx) => (
                   <label key={idx} className="flex items-center gap-3 cursor-pointer">
                     <input
-                      type="checkbox"
-                      checked={selectedHarga.includes(idx)}
+                      type="radio"
+                      name="rentang-harga"
+                      checked={selectedHarga === idx}
                       onChange={() => toggleHarga(idx)}
-                      className="w-4 h-4 accent-lime-500 rounded"
+                      className="w-4 h-4 accent-lime-500"
                     />
                     <span className="text-sm text-brown-700">{range.label}</span>
                   </label>
@@ -293,8 +312,9 @@ const Katalog = () => {
               {RENTANG_HARGA.map((range, idx) => (
                 <label key={idx} className="flex items-center gap-1.5 cursor-pointer bg-cream-50 rounded-lg px-3 py-1.5 border border-cream-200">
                   <input
-                    type="checkbox"
-                    checked={selectedHarga.includes(idx)}
+                    type="radio"
+                    name="rentang-harga-mobile"
+                    checked={selectedHarga === idx}
                     onChange={() => toggleHarga(idx)}
                     className="w-3.5 h-3.5 accent-lime-500"
                   />
@@ -316,7 +336,7 @@ const Katalog = () => {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-brown-600 whitespace-nowrap">Urutkan Berdasarkan:</span>
+                <span className="text-sm text-brown-600 whitespace-nowrap">Prioritaskan Kriteria:</span>
 
                 <div className="relative">
                   <select
@@ -360,8 +380,29 @@ const Katalog = () => {
             </div>
 
             {errorMsg && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-                {errorMsg}
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2 flex items-center justify-between gap-2">
+                <span>{errorMsg}</span>
+                {errorMsg.includes('okasi') && (
+                  <button
+                    onClick={refreshUserLocation}
+                    className="shrink-0 text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition-colors"
+                  >
+                    Refresh Lokasi
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Indikator lokasi aktif — tampil saat lokasi sudah didapat */}
+            {userLocation && (
+              <div className="mb-3 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
+                <span>📍 Lokasi aktif: {userLocation.lat.toFixed(5)}, {userLocation.lng.toFixed(5)}</span>
+                <button
+                  onClick={refreshUserLocation}
+                  className="shrink-0 text-xs font-medium text-green-700 hover:underline"
+                >
+                  Perbarui
+                </button>
               </div>
             )}
 
