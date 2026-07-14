@@ -1,4 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Phone, ChevronLeft, Star } from 'lucide-react';
 import { Button } from '../../components/UI/Button';
@@ -9,7 +10,15 @@ import { sanggarApi } from '../../services/api';
 
 // Bentuk data persis seperti yang dibalikin getSanggarById di backend
 // (include: { region: true, products: { include: { category: true, reviews: true } } })
-type BackendReview = { quality: number; popularity: number; design: number };
+type BackendReview = {
+  id: number;
+  reviewerName: string;
+  quality: number;
+  popularity: number;
+  design: number;
+  comment: string | null;
+  createdAt: string;
+};
 
 type BackendProduct = {
   id: number;
@@ -40,6 +49,13 @@ const formatPrice = (price: number) =>
     minimumFractionDigits: 0,
   }).format(price);
 
+const formatTanggal = (isoString: string) =>
+  new Date(isoString).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
 // Hitung rating rata-rata dari kumpulan review (quality, popularity, design)
 const hitungRating = (reviews: BackendReview[]) => {
   if (reviews.length === 0) return 0;
@@ -48,6 +64,16 @@ const hitungRating = (reviews: BackendReview[]) => {
     0
   );
   return Number((total / reviews.length).toFixed(1));
+};
+
+// Avatar bulat dari inisial nama reviewer
+const Avatar = ({ name }: { name: string }) => {
+  const initial = (name || '?').trim().charAt(0).toUpperCase();
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#432f27] text-sm font-semibold text-white">
+      {initial}
+    </div>
+  );
 };
 
 // Card produk (dari data backend)
@@ -83,6 +109,157 @@ const ProductCard = ({ produk }: { produk: BackendProduct }) => {
         </div>
       </div>
     </Link>
+  );
+};
+
+// Section ulasan dengan tab per produk — hanya 1 produk yang tampil sekaligus
+const UlasanSection = ({
+  produkList,
+  semuaReview,
+  ratingSanggar,
+}: {
+  produkList: BackendProduct[];
+  semuaReview: BackendReview[];
+  ratingSanggar: number;
+}) => {
+  const [activeId, setActiveId] = useState(produkList[0]?.id ?? null);
+  const [showAll, setShowAll] = useState(false);
+  const LIMIT = 4;
+
+  const produk = produkList.find((p) => p.id === activeId) ?? produkList[0];
+  if (!produk) return null;
+
+  const avgQuality = produk.reviews.reduce((s, r) => s + r.quality, 0) / produk.reviews.length;
+  const avgPop     = produk.reviews.reduce((s, r) => s + r.popularity, 0) / produk.reviews.length;
+  const avgDesign  = produk.reviews.reduce((s, r) => s + r.design, 0) / produk.reviews.length;
+  const avgAll     = hitungRating(produk.reviews);
+  const tampil     = showAll ? produk.reviews : produk.reviews.slice(0, LIMIT);
+
+  const handleTabClick = (id: number) => {
+    setActiveId(id);
+    setShowAll(false);
+  };
+
+  return (
+    <div className="bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl shadow-[0_8px_24px_rgba(88,56,34,0.07)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-[#e8dcc8]">
+        <Star size={20} className="fill-[#eab308] text-[#eab308] shrink-0" />
+        <h2 className="text-xl font-serif font-bold text-brown-900">Ulasan Pelanggan</h2>
+        <span className="text-xs text-brown-600 bg-[#432f27]/10 px-2.5 py-1 rounded-full ml-auto shrink-0">
+          {semuaReview.length} ulasan · {ratingSanggar.toFixed(1)} ★
+        </span>
+      </div>
+
+      {/* Tab produk — scroll horizontal kalau banyak */}
+      <div className="flex gap-2 px-6 py-3 overflow-x-auto border-b border-[#e8dcc8] scrollbar-thin">
+        {produkList.map((p) => {
+          const isActive = p.id === activeId;
+          const r = hitungRating(p.reviews);
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => handleTabClick(p.id)}
+              className={`flex items-center gap-2 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
+                isActive
+                  ? 'bg-[#432f27] text-white'
+                  : 'bg-[#f5ead8] text-brown-800 hover:bg-[#e8dcc8]'
+              }`}
+            >
+              {p.productName}
+              <span className={`text-[10px] ${isActive ? 'text-white/70' : 'text-brown-500'}`}>
+                ★ {r.toFixed(1)} ({p.reviews.length})
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Konten produk aktif */}
+      <div className="p-6">
+        {/* Info produk aktif */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-[#f5ead8]">
+            <img
+              src={produk.image || '/batik 1.jpg'}
+              alt={produk.productName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="min-w-0">
+            <Link
+              to={`/produk/${produk.id}`}
+              className="font-serif font-bold text-brown-900 text-sm hover:underline line-clamp-1"
+            >
+              {produk.productName}
+            </Link>
+            <div className="flex items-center gap-1 mt-0.5">
+              {[1,2,3,4,5].map((s) => (
+                <Star key={s} size={11}
+                  className={s <= Math.round(avgAll) ? 'fill-[#eab308] text-[#eab308]' : 'fill-gray-200 text-gray-200'}
+                />
+              ))}
+              <span className="text-xs text-brown-600 ml-1">{avgAll.toFixed(1)} · {produk.reviews.length} ulasan</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bar rata-rata per kriteria */}
+        <div className="space-y-2 mb-6 max-w-xs">
+          {([
+            ['Kualitas', avgQuality],
+            ['Popularitas', avgPop],
+            ['Desain Batik', avgDesign],
+          ] as [string, number][]).map(([label, val]) => (
+            <div key={label} className="grid grid-cols-[90px_1fr_30px] items-center gap-3 text-xs text-brown-700">
+              <span>{label}</span>
+              <div className="h-[3px] rounded-full bg-[#e8dcc8]">
+                <div className="h-full rounded-full bg-[#432f27]" style={{ width: `${(val / 5) * 100}%` }} />
+              </div>
+              <span className="text-right">{val.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Daftar komentar */}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {tampil.map((review) => (
+            <div key={review.id} className="flex gap-3">
+              <Avatar name={review.reviewerName} />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-brown-900 truncate">{review.reviewerName}</p>
+                <p className="text-xs text-brown-500 mb-1">{formatTanggal(review.createdAt)}</p>
+                <div className="flex items-center gap-0.5 mb-1.5">
+                  {[1,2,3,4,5].map((s) => (
+                    <Star key={s} size={11}
+                      className={
+                        s <= Math.round((review.quality + review.popularity + review.design) / 3)
+                          ? 'fill-[#eab308] text-[#eab308]'
+                          : 'fill-gray-200 text-gray-200'
+                      }
+                    />
+                  ))}
+                </div>
+                {review.comment && (
+                  <p className="text-sm text-brown-700 leading-relaxed">{review.comment}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {produk.reviews.length > LIMIT && (
+          <button
+            type="button"
+            onClick={() => setShowAll((prev) => !prev)}
+            className="mt-5 text-sm font-semibold text-[#432f27] underline underline-offset-2 hover:text-black transition-colors"
+          >
+            {showAll ? 'Sembunyikan ulasan' : `Lihat semua ${produk.reviews.length} ulasan`}
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -126,9 +303,12 @@ const SanggarDetail = () => {
   const semuaReview = sanggar.products.flatMap((p) => p.reviews);
   const ratingSanggar = hitungRating(semuaReview);
 
+  // Produk yang punya ulasan (untuk section reviews)
+  const produkDenganUlasan = sanggar.products.filter((p) => p.reviews.length > 0);
+
   return (
     <div className="relative min-h-screen bg-[#f5ead8]">
-      {/* Background Pattern — samain kaya landing page */}
+      {/* Background Pattern */}
       <div className="fixed inset-0 opacity-40 pointer-events-none">
         <BatikPattern className="w-full h-full" />
       </div>
@@ -236,8 +416,19 @@ const SanggarDetail = () => {
           )}
         </div>
 
+        {/* Reviews Section — tampil kalau ada minimal 1 produk dengan ulasan */}
+        {produkDenganUlasan.length > 0 && (
+          <div className="mb-16">
+            <UlasanSection
+              produkList={produkDenganUlasan}
+              semuaReview={semuaReview}
+              ratingSanggar={ratingSanggar}
+            />
+          </div>
+        )}
+
         {/* Map Section */}
-        <div className="mt-16">
+        <div className="mt-4">
           <h2 className="text-2xl font-serif font-bold text-brown-900 mb-4">
             Lokasi Sanggar
           </h2>
